@@ -1,12 +1,13 @@
 // @flow
 
-import { getToolbarButtons } from '../../../../base/config';
 import { translate } from '../../../../base/i18n';
 import { connect } from '../../../../base/redux';
 import AbstractLiveStreamButton, {
     _mapStateToProps as _abstractMapStateToProps,
     type Props
 } from '../AbstractLiveStreamButton';
+
+declare var interfaceConfig: Object;
 
 /**
  * Maps (parts of) the redux state to the associated props for the
@@ -24,11 +25,10 @@ import AbstractLiveStreamButton, {
  */
 function _mapStateToProps(state: Object, ownProps: Props) {
     const abstractProps = _abstractMapStateToProps(state, ownProps);
-    const toolbarButtons = getToolbarButtons(state);
     let { visible } = ownProps;
 
     if (typeof visible === 'undefined') {
-        visible = toolbarButtons.includes('livestreaming') && abstractProps.visible;
+        visible = interfaceConfig.TOOLBAR_BUTTONS.includes('livestreaming') && abstractProps.visible;
     }
 
     return {

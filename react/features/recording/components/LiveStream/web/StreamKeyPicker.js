@@ -54,7 +54,7 @@ type State = {
 /**
  * A dropdown to select a YouTube broadcast.
  *
- * @augments Component
+ * @extends Component
  */
 class StreamKeyPicker extends PureComponent<Props, State> {
     /**
@@ -111,9 +111,10 @@ class StreamKeyPicker extends PureComponent<Props, State> {
         const dropdownItems
             = broadcasts.map(broadcast => (
                 <DropdownItem
-                    data-streamid = { broadcast.boundStreamID }
                     key = { broadcast.boundStreamID }
-                    onClick = { this._onSelect }>
+
+                    // eslint-disable-next-line react/jsx-no-bind
+                    onClick = { () => this._onSelect(broadcast.boundStreamID) }>
                     { broadcast.title }
                 </DropdownItem>));
         const selected
@@ -123,7 +124,7 @@ class StreamKeyPicker extends PureComponent<Props, State> {
             = (selected && selected.title) || t('liveStreaming.choose');
 
         return (
-            <div className = 'broadcast-dropdown dropdown-menu'>
+            <div className = 'broadcast-dropdown'>
                 <DropdownMenuStateless
                     isOpen = { this.state.isDropdownOpen }
                     onItemActivated = { this._onSelect }
@@ -182,14 +183,12 @@ class StreamKeyPicker extends PureComponent<Props, State> {
     /**
      * Callback invoked when an item has been clicked in the dropdown menu.
      *
-     * @param {Object} e - The key event to handle.
-     *
+     * @param {Object} boundStreamID - The bound stream ID for the selected
+     * broadcast.
      * @returns {void}
      */
-    _onSelect(e) {
-        const streamId = e.currentTarget.getAttribute('data-streamid');
-
-        this.props.onBroadcastSelected(streamId);
+    _onSelect(boundStreamID) {
+        this.props.onBroadcastSelected(boundStreamID);
     }
 }
 

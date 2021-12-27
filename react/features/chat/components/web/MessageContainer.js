@@ -11,7 +11,7 @@ import ChatMessageGroup from './ChatMessageGroup';
 /**
  * Displays all received chat messages, grouped by sender.
  *
- * @augments AbstractMessageContainer
+ * @extends AbstractMessageContainer
  */
 export default class MessageContainer extends AbstractMessageContainer<Props> {
     /**
@@ -70,12 +70,9 @@ export default class MessageContainer extends AbstractMessageContainer<Props> {
 
         return (
             <div
-                aria-labelledby = 'chat-header'
                 id = 'chatconversation'
                 onScroll = { this._onChatScroll }
-                ref = { this._messageListRef }
-                role = 'log'
-                tabIndex = { 0 }>
+                ref = { this._messageListRef }>
                 { messages }
                 <div ref = { this._messagesListEndRef } />
             </div>

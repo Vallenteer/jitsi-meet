@@ -1,5 +1,5 @@
 -- Token authentication
--- Copyright (C) 2021-present 8x8, Inc.
+-- Copyright (C) 2015 Atlassian
 
 local formdecode = require "util.http".formdecode;
 local generate_uuid = require "util.uuid".generate;
@@ -12,8 +12,6 @@ local sessions = prosody.full_sessions;
 if token_util == nil then
     return;
 end
-
-module:depends("jitsi_session");
 
 -- define auth provider
 local provider = {};
@@ -34,6 +32,18 @@ function init_session(event)
         -- other fields will be extracted from the token and set in the session
 
         session.auth_token = query and params.token or nil;
+        -- previd is used together with https://modules.prosody.im/mod_smacks.html
+        -- the param is used to find resumed session and re-use anonymous(random) user id
+        -- (see get_username_from_token)
+        session.previd = query and params.previd or nil;
+
+        -- The room name and optional prefix from the web query
+        session.jitsi_web_query_room = params.room;
+        session.jitsi_web_query_prefix = params.prefix or "";
+
+        -- Deprecated, you should use jitsi_web_query_room and jitsi_web_query_prefix
+        session.jitsi_bosh_query_room = session.jitsi_web_query_room;
+        session.jitsi_bosh_query_prefix = session.jitsi_web_query_prefix;
     end
 end
 
@@ -83,12 +93,6 @@ function provider.get_sasl_handler(session)
                 "Error verifying token err:%s, reason:%s", error, reason);
             session.auth_token = nil;
             return res, error, reason;
-        end
-
-        local shouldAllow = prosody.events.fire_event("jitsi-access-ban-check", session);
-        if shouldAllow == false then
-            log("warn", "user is banned")
-            return false, "not-allowed", "user is banned";
         end
 
         local customUsername

@@ -100,7 +100,7 @@ export default class VideoMuteButton
     }
 
     /**
-     * Indicates if video is currently muted or not.
+     * Indicates if video is currently muted ot nor.
      *
      * @override
      * @protected

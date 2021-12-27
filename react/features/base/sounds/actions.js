@@ -11,7 +11,6 @@ import {
     UNREGISTER_SOUND
 } from './actionTypes';
 import { getSoundsPath } from './functions';
-import { getDisabledSounds } from './functions.any';
 
 /**
  * Adds {@link AudioElement} instance to the base/sounds feature state for the
@@ -64,18 +63,15 @@ export function _removeAudioElement(soundId: string) {
  *
  * @param {string} soundId - The id of the sound to be played (the same one
  * which was used in {@link registerSound} to register the sound).
- * @returns {Function}
+ * @returns {{
+ *     type: PLAY_SOUND,
+ *     soundId: string
+ * }}
  */
 export function playSound(soundId: string): Object {
-    return (dispatch: Function, getState: Function) => {
-        const disabledSounds = getDisabledSounds(getState());
-
-        if (!disabledSounds.includes(soundId) && !disabledSounds.find(id => soundId.startsWith(id))) {
-            dispatch({
-                type: PLAY_SOUND,
-                soundId
-            });
-        }
+    return {
+        type: PLAY_SOUND,
+        soundId
     };
 }
 
@@ -89,7 +85,7 @@ export function playSound(soundId: string): Object {
  * created for given source object.
  * @param {string} soundName - The name of bundled audio file that will be
  * associated with the given {@code soundId}.
- * @param {Object} options - Optional parameters.
+ * @param {Object} options - Optional paramaters.
  * @param {boolean} options.loop - True in order to loop the sound.
  * @returns {{
  *     type: REGISTER_SOUND,

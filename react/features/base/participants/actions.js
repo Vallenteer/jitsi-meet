@@ -1,4 +1,4 @@
-import { NOTIFICATION_TIMEOUT_TYPE, showNotification } from '../../notifications';
+import { NOTIFICATION_TIMEOUT, showNotification } from '../../notifications';
 import { set } from '../redux';
 
 import {
@@ -7,7 +7,6 @@ import {
     HIDDEN_PARTICIPANT_LEFT,
     GRANT_MODERATOR,
     KICK_PARTICIPANT,
-    LOCAL_PARTICIPANT_RAISE_HAND,
     MUTE_REMOTE_PARTICIPANT,
     PARTICIPANT_ID_CHANGED,
     PARTICIPANT_JOINED,
@@ -19,21 +18,16 @@ import {
     RAISE_HAND_UPDATED
 } from './actionTypes';
 import {
-    DISCO_REMOTE_CONTROL_FEATURE
-} from './constants';
-import {
     getLocalParticipant,
     getNormalizedDisplayName,
     getParticipantDisplayName,
-    getParticipantById
+    figureOutMutedWhileDisconnectedStatus
 } from './functions';
-import logger from './logger';
 
 /**
  * Create an action for when dominant speaker changes.
  *
- * @param {string} dominantSpeaker - Participant ID of the dominant speaker.
- * @param {Array<string>} previousSpeakers - Participant IDs of the previous speakers.
+ * @param {string} id - Participant's ID.
  * @param {JitsiConference} conference - The {@code JitsiConference} associated
  * with the participant identified by the specified {@code id}. Only the local
  * participant is allowed to not specify an associated {@code JitsiConference}
@@ -42,18 +36,16 @@ import logger from './logger';
  *     type: DOMINANT_SPEAKER_CHANGED,
  *     participant: {
  *         conference: JitsiConference,
- *         id: string,
- *         previousSpeakers: Array<string>
+ *         id: string
  *     }
  * }}
  */
-export function dominantSpeakerChanged(dominantSpeaker, previousSpeakers, conference) {
+export function dominantSpeakerChanged(id, conference) {
     return {
         type: DOMINANT_SPEAKER_CHANGED,
         participant: {
             conference,
-            id: dominantSpeaker,
-            previousSpeakers
+            id
         }
     };
 }
@@ -199,18 +191,15 @@ export function localParticipantRoleChanged(role) {
  * Create an action for muting another participant in the conference.
  *
  * @param {string} id - Participant's ID.
- * @param {MEDIA_TYPE} mediaType - The media to mute.
  * @returns {{
  *     type: MUTE_REMOTE_PARTICIPANT,
- *     id: string,
- *     mediaType: MEDIA_TYPE
+ *     id: string
  * }}
  */
-export function muteRemoteParticipant(id, mediaType) {
+export function muteRemoteParticipant(id) {
     return {
         type: MUTE_REMOTE_PARTICIPANT,
-        id,
-        mediaType
+        id
     };
 }
 
@@ -229,12 +218,15 @@ export function muteRemoteParticipant(id, mediaType) {
  * }}
  */
 export function participantConnectionStatusChanged(id, connectionStatus) {
-    return {
-        type: PARTICIPANT_UPDATED,
-        participant: {
-            connectionStatus,
-            id
-        }
+    return (dispatch, getState) => {
+        return {
+            type: PARTICIPANT_UPDATED,
+            participant: {
+                connectionStatus,
+                id,
+                mutedWhileDisconnected: figureOutMutedWhileDisconnectedStatus(getState(), id, connectionStatus)
+            }
+        };
     };
 }
 
@@ -286,48 +278,6 @@ export function participantJoined(participant) {
 }
 
 /**
- * Updates the features of a remote participant.
- *
- * @param {JitsiParticipant} jitsiParticipant - The ID of the participant.
- * @returns {{
-*     type: PARTICIPANT_UPDATED,
-*     participant: Participant
-* }}
-*/
-export function updateRemoteParticipantFeatures(jitsiParticipant) {
-    return (dispatch, getState) => {
-        if (!jitsiParticipant) {
-            return;
-        }
-
-        const id = jitsiParticipant.getId();
-
-        jitsiParticipant.getFeatures()
-            .then(features => {
-                const supportsRemoteControl = features.has(DISCO_REMOTE_CONTROL_FEATURE);
-                const participant = getParticipantById(getState(), id);
-
-                if (!participant || participant.local) {
-                    return;
-                }
-
-                if (participant?.supportsRemoteControl !== supportsRemoteControl) {
-                    return dispatch({
-                        type: PARTICIPANT_UPDATED,
-                        participant: {
-                            id,
-                            supportsRemoteControl
-                        }
-                    });
-                }
-            })
-            .catch(error => {
-                logger.error(`Failed to get participant features for ${id}!`, error);
-            });
-    };
-}
-
-/**
  * Action to signal that a hidden participant has joined the conference.
  *
  * @param {string} id - The id of the participant.
@@ -371,7 +321,6 @@ export function hiddenParticipantLeft(id) {
  * with the participant identified by the specified {@code id}. Only the local
  * participant is allowed to not specify an associated {@code JitsiConference}
  * instance.
- * @param {boolean} isReplaced - Whether the participant is to be replaced in the meeting.
  * @returns {{
  *     type: PARTICIPANT_LEFT,
  *     participant: {
@@ -380,13 +329,13 @@ export function hiddenParticipantLeft(id) {
  *     }
  * }}
  */
-export function participantLeft(id, conference, isReplaced) {
+export function participantLeft(id, conference, displayName) {
     return {
         type: PARTICIPANT_LEFT,
         participant: {
             conference,
             id,
-            isReplaced
+            displayName
         }
     };
 }
@@ -457,28 +406,40 @@ export function participantUpdated(participant = {}) {
         participant: participantToUpdate
     };
 }
+// RAISE HAND UPDATED
+
+export function raiseHandUpdated(id, displayName, handRaised) {
+    return {
+        type: RAISE_HAND_UPDATED,
+        participant: {
+            id,
+            handRaised,
+            displayName
+        }
+    };
+}
+// END RAISE HAND UPDATED
 
 /**
  * Action to signal that a participant has muted us.
  *
  * @param {JitsiParticipant} participant - Information about participant.
- * @param {JitsiLocalTrack} track - Information about the track that has been muted.
  * @returns {Promise}
  */
-export function participantMutedUs(participant, track) {
+export function participantMutedUs(participant) {
     return (dispatch, getState) => {
         if (!participant) {
             return;
         }
 
-        const isAudio = track.isAudioTrack();
-
         dispatch(showNotification({
-            titleKey: isAudio ? 'notify.mutedRemotelyTitle' : 'notify.videoMutedRemotelyTitle',
+            descriptionKey: 'notify.mutedRemotelyDescription',
+            titleKey: 'notify.mutedRemotelyTitle',
             titleArguments: {
-                participantDisplayName: getParticipantDisplayName(getState, participant.getId())
+                participantDisplayName:
+                    getParticipantDisplayName(getState, participant.getId())
             }
-        }, NOTIFICATION_TIMEOUT_TYPE.LONG));
+        }));
     };
 }
 
@@ -495,12 +456,8 @@ export function participantKicked(kicker, kicked) {
         dispatch({
             type: PARTICIPANT_KICKED,
             kicked: kicked.getId(),
-            kicker: kicker?.getId()
+            kicker: kicker.getId()
         });
-
-        if (kicked.isReplaced && kicked.isReplaced()) {
-            return;
-        }
 
         dispatch(showNotification({
             titleArguments: {
@@ -510,7 +467,7 @@ export function participantKicked(kicker, kicked) {
                     getParticipantDisplayName(getState, kicker.getId())
             },
             titleKey: 'notify.kickParticipant'
-        }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
+        }, NOTIFICATION_TIMEOUT * 2)); // leave more time for this
     };
 }
 
@@ -540,55 +497,20 @@ export function pinParticipant(id) {
  *
  * @param {string} participantId - The ID of the participant.
  * @param {string} url - The new URL.
- * @param {boolean} useCORS - Indicates whether we need to use CORS for this URL.
  * @returns {{
  *     type: SET_LOADABLE_AVATAR_URL,
  *     participant: {
  *         id: string,
- *         loadableAvatarUrl: string,
- *         loadableAvatarUrlUseCORS: boolean
+ *         loadableAvatarUrl: string
  *     }
  * }}
 */
-export function setLoadableAvatarUrl(participantId, url, useCORS) {
+export function setLoadableAvatarUrl(participantId, url) {
     return {
         type: SET_LOADABLE_AVATAR_URL,
         participant: {
             id: participantId,
-            loadableAvatarUrl: url,
-            loadableAvatarUrlUseCORS: useCORS
+            loadableAvatarUrl: url
         }
-    };
-}
-
-/**
- * Raise hand for the local participant.
- *
- * @param {boolean} enabled - Raise or lower hand.
- * @returns {{
- *     type: LOCAL_PARTICIPANT_RAISE_HAND,
- *     raisedHandTimestamp: number
- * }}
- */
-export function raiseHand(enabled) {
-    return {
-        type: LOCAL_PARTICIPANT_RAISE_HAND,
-        raisedHandTimestamp: enabled ? Date.now() : 0
-    };
-}
-
-/**
- * Update raise hand queue of participants.
- *
- * @param {Object} participant - Participant that updated raised hand.
- * @returns {{
- *      type: RAISE_HAND_UPDATED,
- *      participant: Object
- * }}
- */
-export function raiseHandUpdateQueue(participant) {
-    return {
-        type: RAISE_HAND_UPDATED,
-        participant
     };
 }

@@ -3,7 +3,6 @@
 import React, { Component } from 'react';
 
 import { translate } from '../../../../base/i18n';
-import { Icon, IconSip } from '../../../../base/icons';
 
 type Props = {
 
@@ -32,7 +31,7 @@ type Props = {
 /**
  * Displays a table with phone numbers to dial in to a conference.
  *
- * @augments Component
+ * @extends Component
  */
 class NumbersList extends Component<Props> {
     /**
@@ -66,20 +65,8 @@ class NumbersList extends Component<Props> {
                 (resultNumbers, number) => {
                     // The i18n-iso-countries package insists on upper case.
                     const countryCode = number.countryCode.toUpperCase();
-
-                    let countryName;
-
-                    if (countryCode === 'SIP') {
-                        countryName = t('info.sip');
-                    } else {
-                        countryName = t(`countries:countries.${countryCode}`);
-
-                        // Some countries have multiple names as US ['United States of America', 'USA']
-                        // choose the first one if that is the case
-                        if (!countryName) {
-                            countryName = t(`countries:countries.${countryCode}.0`);
-                        }
-                    }
+                    const countryName
+                        = t(`countries:countries.${countryCode}`);
 
                     if (resultNumbers[countryName]) {
                         resultNumbers[countryName].push(number);
@@ -156,10 +143,7 @@ class NumbersList extends Component<Props> {
         if (countryCode) {
             return (
                 <td className = 'flag-cell'>
-                    {countryCode === 'SIP'
-                        ? <Icon src = { IconSip } />
-                        : <i className = { `flag iti-flag ${countryCode}` } />
-                    }
+                    <i className = { `flag iti-flag ${countryCode}` } />
                 </td>);
         }
 

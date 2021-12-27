@@ -24,7 +24,7 @@ type Props = AbstractButtonProps & {
 /**
  * Component that renders a toolbar button for leaving the current conference.
  *
- * @augments AbstractHangupButton
+ * @extends AbstractHangupButton
  */
 class HangupButton extends AbstractHangupButton<Props, *> {
     _hangup: Function;
@@ -41,7 +41,9 @@ class HangupButton extends AbstractHangupButton<Props, *> {
      */
     constructor(props: Props) {
         super(props);
-
+        if(this.props.overflow) {
+            this.label = "Leave Meeting";
+        }
         this._hangup = _.once(() => {
             sendAnalytics(createToolbarEvent('hangup'));
 

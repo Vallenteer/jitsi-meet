@@ -8,8 +8,8 @@ export default {
      */
     highlightedIndicator: {
         backgroundColor: ColorPalette.blue,
-        borderRadius: 4,
-        padding: 2
+        borderRadius: 16,
+        padding: 4
     },
 
     /**

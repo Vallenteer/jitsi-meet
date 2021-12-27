@@ -19,7 +19,7 @@ export {
 const postisOptions = {};
 
 if (typeof API_ID === 'number') {
-    postisOptions.scope = `jitsi_meet_external_api_${API_ID}`;
+    postisOptions.scope = `videoapi_external_api_${API_ID}`;
 }
 
 /**

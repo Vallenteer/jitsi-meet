@@ -2,7 +2,6 @@
 
 import { StyleSheet } from 'react-native';
 
-import BaseTheme from '../../../../base/ui/components/BaseTheme.native';
 import { ColorSchemeRegistry, schemeColor } from '../../../color-scheme';
 import { BoxModel, ColorPalette } from '../../../styles';
 import { PREFERRED_DIALOG_SIZE } from '../../constants';
@@ -34,7 +33,7 @@ export const bottomSheetStyles = {
     },
 
     scrollView: {
-        paddingHorizontal: 0
+        paddingHorizontal: MD_ITEM_MARGIN_PADDING
     },
 
     /**
@@ -44,11 +43,7 @@ export const bottomSheetStyles = {
         alignItems: 'stretch',
         flex: 1,
         flexDirection: 'column',
-        justifyContent: 'flex-end',
-        maxWidth: 500,
-        marginLeft: 'auto',
-        marginRight: 'auto',
-        width: '100%'
+        justifyContent: 'flex-end'
     },
 
     sheetItemContainer: {
@@ -81,18 +76,8 @@ export const brandedDialog = {
     },
 
     closeWrapper: {
+        alignSelf: 'flex-end',
         padding: BoxModel.padding
-    },
-
-    dialogTitle: {
-        fontWeight: 'bold',
-        paddingLeft: BoxModel.padding * 2
-    },
-
-    headerWrapper: {
-        alignItems: 'center',
-        flexDirection: 'row',
-        justifyContent: 'space-between'
     },
 
     mainWrapper: {
@@ -127,24 +112,6 @@ const brandedDialogText = {
     textAlign: 'center'
 };
 
-const brandedDialogLabelStyle = {
-    color: ColorPalette.white,
-    flexShrink: 1,
-    fontSize: MD_FONT_SIZE,
-    opacity: 0.90
-};
-
-const brandedDialogItemContainerStyle = {
-    alignItems: 'center',
-    flexDirection: 'row',
-    height: MD_ITEM_HEIGHT
-};
-
-const brandedDialogIconStyle = {
-    color: ColorPalette.white,
-    fontSize: 24
-};
-
 export const inputDialog = {
     bottomField: {
         marginBottom: 0
@@ -174,52 +141,45 @@ ColorSchemeRegistry.register('BottomSheet', {
          * Style for the {@code Icon} element in a generic item of the menu.
          */
         iconStyle: {
-            ...brandedDialogIconStyle
+            color: schemeColor('icon'),
+            fontSize: 24
         },
 
         /**
          * Style for the label in a generic item rendered in the menu.
          */
         labelStyle: {
-            ...brandedDialogLabelStyle,
-            marginLeft: 16
+            color: schemeColor('text'),
+            flexShrink: 1,
+            fontSize: MD_FONT_SIZE,
+            marginLeft: 32,
+            opacity: 0.90
         },
 
         /**
          * Container style for a generic item rendered in the menu.
          */
         style: {
-            ...brandedDialogItemContainerStyle,
-            paddingHorizontal: MD_ITEM_MARGIN_PADDING
+            alignItems: 'center',
+            flexDirection: 'row',
+            height: MD_ITEM_HEIGHT
         },
 
         /**
          * Additional style that is not directly used as a style object.
          */
-        underlayColor: ColorPalette.toggled
+        underlayColor: ColorPalette.overflowMenuItemUnderlay
+    },
+
+    expandIcon: {
+        color: schemeColor('icon')
     },
 
     /**
      * Bottom sheet's base style.
      */
     sheet: {
-        backgroundColor: BaseTheme.palette.ui02,
-        borderTopLeftRadius: 16,
-        borderTopRightRadius: 16
-    },
-
-    /**
-     * Bottom sheet's base style with header.
-     */
-    sheetHeader: {
-        backgroundColor: BaseTheme.palette.ui02
-    },
-
-    /**
-     * Bottom sheet's background color with footer.
-     */
-    sheetFooter: {
-        backgroundColor: BaseTheme.palette.bottomSheet
+        backgroundColor: schemeColor('background')
     }
 });
 
@@ -296,30 +256,5 @@ ColorSchemeRegistry.register('Dialog', {
     topBorderContainer: {
         borderTopColor: schemeColor('border'),
         borderTopWidth: 1
-    }
-});
-
-ColorSchemeRegistry.register('SecurityDialog', {
-    /**
-     * Field on an input dialog.
-     */
-    field: {
-        borderBottomWidth: 1,
-        borderColor: schemeColor('border'),
-        color: schemeColor('text'),
-        fontSize: 14,
-        paddingBottom: 8
-    },
-
-    text: {
-        color: schemeColor('text'),
-        fontSize: 14,
-        marginTop: 8
-    },
-
-    title: {
-        color: schemeColor('text'),
-        fontSize: 18,
-        fontWeight: 'bold'
     }
 });

@@ -2,12 +2,11 @@
 
 import React from 'react';
 import { Text, View, TouchableOpacity, TextInput } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Avatar } from '../../../base/avatar';
+import { CustomDialog } from '../../../base/dialog';
 import { translate } from '../../../base/i18n';
 import { Icon, IconEdit } from '../../../base/icons';
-import JitsiScreen from '../../../base/modal/components/JitsiScreen';
 import { LoadingIndicator } from '../../../base/react';
 import { connect } from '../../../base/redux';
 import AbstractLobbyScreen, { _mapStateToProps } from '../AbstractLobbyScreen';
@@ -27,18 +26,17 @@ class LobbyScreen extends AbstractLobbyScreen {
         const { _meetingName, t } = this.props;
 
         return (
-            <JitsiScreen
+            <CustomDialog
+                onCancel = { this._onCancel }
                 style = { styles.contentWrapper }>
-                <SafeAreaView>
-                    <Text style = { styles.dialogTitle }>
-                        { t(this._getScreenTitleKey()) }
-                    </Text>
-                    <Text style = { styles.secondaryText }>
-                        { _meetingName }
-                    </Text>
-                    { this._renderContent() }
-                </SafeAreaView>
-            </JitsiScreen>
+                <Text style = { styles.dialogTitle }>
+                    { t(this._getScreenTitleKey()) }
+                </Text>
+                <Text style = { styles.secondaryText }>
+                    { _meetingName }
+                </Text>
+                { this._renderContent() }
+            </CustomDialog>
         );
     }
 
@@ -210,7 +208,7 @@ class LobbyScreen extends AbstractLobbyScreen {
      * @inheritdoc
      */
     _renderStandardButtons() {
-        const { _knocking, _renderPassword, t } = this.props;
+        const { _knocking, t } = this.props;
 
         return (
             <>
@@ -225,7 +223,7 @@ class LobbyScreen extends AbstractLobbyScreen {
                         { t('lobby.knockButton') }
                     </Text>
                 </TouchableOpacity> }
-                { _renderPassword && <TouchableOpacity
+                <TouchableOpacity
                     onPress = { this._onSwitchToPasswordMode }
                     style = { [
                         styles.button,
@@ -233,13 +231,6 @@ class LobbyScreen extends AbstractLobbyScreen {
                     ] }>
                     <Text>
                         { t('lobby.enterPasswordButton') }
-                    </Text>
-                </TouchableOpacity> }
-                <TouchableOpacity
-                    onPress = { this._onCancel }
-                    style = { styles.cancelButton }>
-                    <Text>
-                        { t('dialog.Cancel') }
                     </Text>
                 </TouchableOpacity>
             </>

@@ -1,7 +1,5 @@
 // @flow
 
-/* eslint-disable react/jsx-no-bind */
-
 import React, { useState } from 'react';
 
 import { translate } from '../../../../base/i18n';
@@ -36,12 +34,9 @@ function LiveStreamSection({ liveStreamViewURL, t }: Props) {
      *
      * @returns {void}
      */
-    async function onClick() {
+    function onClick() {
         setIsHovered(false);
-
-        const isCopied = await copyText(liveStreamViewURL);
-
-        if (isCopied) {
+        if (copyText(liveStreamViewURL)) {
             setIsClicked(true);
 
             setTimeout(() => {

@@ -4,9 +4,6 @@ import { equals, ReducerRegistry, set } from '../redux';
 
 import { SET_LOG_COLLECTOR, SET_LOGGING_CONFIG } from './actionTypes';
 
-// eslint-disable-next-line
-const LOGGING_CONFIG = require('../../../../logging_config.js');
-
 /**
  * The default/initial redux state of the feature base/logging.
  *
@@ -15,28 +12,14 @@ const LOGGING_CONFIG = require('../../../../logging_config.js');
  * }}
  */
 const DEFAULT_STATE = {
-    config: LOGGING_CONFIG,
+    // eslint-disable-next-line
+    config: require('../../../../logging_config.js'),
 
     /**
      * The log collector.
      */
     logCollector: undefined
 };
-
-// Reduce verbosity on mobile, it kills performance.
-if (navigator.product === 'ReactNative') {
-    const RN_LOGGING_CONFIG = {
-        'modules/sdp/SDPUtil.js': 'info',
-        'modules/xmpp/ChatRoom.js': 'warn',
-        'modules/xmpp/JingleSessionPC.js': 'info',
-        'modules/xmpp/strophe.jingle.js': 'info'
-    };
-
-    DEFAULT_STATE.config = {
-        ...LOGGING_CONFIG,
-        ...RN_LOGGING_CONFIG
-    };
-}
 
 ReducerRegistry.register(
     'features/base/logging',

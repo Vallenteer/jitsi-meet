@@ -50,7 +50,6 @@ function CallingDialog(props: Props) {
                 <Icon
                     className = 'prejoin-dialog-icon'
                     onClick = { onClose }
-                    role = 'button'
                     size = { 24 }
                     src = { IconClose } />
             </div>

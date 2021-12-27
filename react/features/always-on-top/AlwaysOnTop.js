@@ -21,7 +21,6 @@ const TOOLBAR_TIMEOUT = 4000;
  */
 type State = {
     avatarURL: string,
-    customAvatarBackgrounds: Array<string>,
     displayName: string,
     formattedDisplayName: string,
     isVideoDisplayed: boolean,
@@ -33,7 +32,7 @@ type State = {
  * Represents the always on top page.
  *
  * @class AlwaysOnTop
- * @augments Component
+ * @extends Component
  */
 export default class AlwaysOnTop extends Component<*, State> {
     _hovered: boolean;
@@ -49,7 +48,6 @@ export default class AlwaysOnTop extends Component<*, State> {
 
         this.state = {
             avatarURL: '',
-            customAvatarBackgrounds: [],
             displayName: '',
             formattedDisplayName: '',
             isVideoDisplayed: true,
@@ -180,14 +178,7 @@ export default class AlwaysOnTop extends Component<*, State> {
      * @returns {ReactElement}
      */
     _renderVideoNotAvailableScreen() {
-        const {
-            avatarURL,
-            customAvatarBackgrounds,
-            displayName,
-            formattedDisplayName,
-            isVideoDisplayed,
-            userID
-        } = this.state;
+        const { avatarURL, displayName, formattedDisplayName, isVideoDisplayed, userID } = this.state;
 
         if (isVideoDisplayed) {
             return null;
@@ -197,7 +188,7 @@ export default class AlwaysOnTop extends Component<*, State> {
             <div id = 'videoNotAvailableScreen'>
                 <div id = 'avatarContainer'>
                     <StatelessAvatar
-                        color = { getAvatarColor(userID, customAvatarBackgrounds) }
+                        color = { getAvatarColor(userID) }
                         id = 'avatar'
                         initials = { getInitials(displayName) }
                         url = { avatarURL } />)
@@ -227,12 +218,6 @@ export default class AlwaysOnTop extends Component<*, State> {
         window.addEventListener('mousemove', this._mouseMove);
 
         this._hideToolbarAfterTimeout();
-        api.getCustomAvatarBackgrounds()
-            .then(res =>
-                this.setState({
-                    customAvatarBackgrounds: res.avatarBackgrounds || []
-                }))
-            .catch(console.error);
     }
 
     /**

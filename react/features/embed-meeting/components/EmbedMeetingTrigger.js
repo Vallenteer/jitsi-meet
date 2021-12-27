@@ -1,7 +1,5 @@
 // @flow
 
-/* eslint-disable react/jsx-no-bind */
-
 import React from 'react';
 import { connect } from 'react-redux';
 
@@ -13,7 +11,7 @@ import EmbedMeetingDialog from './EmbedMeetingDialog';
 type Props = {
 
     /**
-     * Open the embed meeting dialog.
+     * Open the embed meeting dialog
      */
     openEmbedDialog: Function,
 
@@ -30,7 +28,7 @@ type Props = {
  */
 function EmbedMeetingTrigger({ t, openEmbedDialog }: Props) {
     /**
-     * Handles opening the embed dialog.
+     * Handles opeming the embed dialog.
      *
      * @returns {void}
      */
@@ -38,28 +36,10 @@ function EmbedMeetingTrigger({ t, openEmbedDialog }: Props) {
         openEmbedDialog(EmbedMeetingDialog);
     }
 
-    /**
-     * KeyPress handler for accessibility.
-     *
-     * @param {React.KeyboardEventHandler<HTMLDivElement>} e - The key event to handle.
-     *
-     * @returns {void}
-     */
-    function onKeyPress(e) {
-        if (e.key === ' ' || e.key === 'Enter') {
-            e.preventDefault();
-            onClick();
-        }
-    }
-
     return (
         <div
-            aria-label = { t('embedMeeting.title') }
             className = 'embed-meeting-trigger'
-            onClick = { onClick }
-            onKeyPress = { onKeyPress }
-            role = 'button'
-            tabIndex = { 0 }>
+            onClick = { onClick }>
             {t('embedMeeting.title')}
         </div>
     );

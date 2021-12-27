@@ -4,19 +4,13 @@ import React, { Component } from 'react';
 
 import { Watermarks } from '../../base/react';
 import { connect } from '../../base/redux';
-import { setColorAlpha } from '../../base/util';
-import { SharedVideo } from '../../shared-video/components/web';
+import { InviteMore, Subject } from '../../conference';
+import { fetchCustomBrandingData } from '../../dynamic-branding';
 import { Captions } from '../../subtitles/';
-import { setTileView } from '../../video-layout/actions';
 
 declare var interfaceConfig: Object;
 
 type Props = {
-
-    /**
-     * The alpha(opacity) of the background.
-     */
-    _backgroundAlpha: number,
 
     /**
      * The user selected background color.
@@ -29,41 +23,36 @@ type Props = {
      _customBackgroundImageUrl: string,
 
     /**
+     * Fetches the branding data.
+     */
+    _fetchCustomBrandingData: Function,
+
+    /**
      * Prop that indicates whether the chat is open.
      */
-    _isChatOpen: boolean,
+    _isModalDialogOpen: boolean,
 
     /**
      * Used to determine the value of the autoplay attribute of the underlying
      * video element.
      */
-    _noAutoPlayVideo: boolean,
-
-    /**
-     * The Redux dispatch function.
-     */
-    dispatch: Function
+    _noAutoPlayVideo: boolean
 }
 
-/** .
+/**
  * Implements a React {@link Component} which represents the large video (a.k.a.
- * The conference participant who is on the local stage) on Web/React.
+ * the conference participant who is on the local stage) on Web/React.
  *
- * @augments Component
+ * @extends Component
  */
 class LargeVideo extends Component<Props> {
-    _tappedTimeout: ?TimeoutID;
-
     /**
-     * Constructor of the component.
+     * Implements React's {@link Component#componentDidMount}.
      *
      * @inheritdoc
      */
-    constructor(props) {
-        super(props);
-
-        this._clearTapTimeout = this._clearTapTimeout.bind(this);
-        this._onDoubleTap = this._onDoubleTap.bind(this);
+    componentDidMount() {
+        this.props._fetchCustomBrandingData();
     }
 
     /**
@@ -73,26 +62,23 @@ class LargeVideo extends Component<Props> {
      * @returns {React$Element}
      */
     render() {
-        const {
-            _isChatOpen,
-            _noAutoPlayVideo
-        } = this.props;
         const style = this._getCustomSyles();
-        const className = `videocontainer${_isChatOpen ? ' shift-right' : ''}`;
-
+        const className = `videocontainer${this.props._needShift ? ' shift-left' : ''}`;
         return (
             <div
                 className = { className }
                 id = 'largeVideoContainer'
                 style = { style }>
-                <SharedVideo />
+                <Subject />
+                <InviteMore />
+                <div id = 'sharedVideo'>
+                    <div id = 'sharedVideoIFrame' />
+                </div>
                 <div id = 'etherpad' />
 
-                <Watermarks />
+                <Watermarks apiID = { this.props.apiID } />
 
-                <div
-                    id = 'dominantSpeaker'
-                    onTouchEnd = { this._onDoubleTap }>
+                <div id = 'dominantSpeaker'>
                     <div className = 'dynamic-shadow' />
                     <div id = 'dominantSpeakerAvatarContainer' />
                 </div>
@@ -109,12 +95,9 @@ class LargeVideo extends Component<Props> {
                       * another container for the background and the
                       * largeVideoWrapper in order to hide/show them.
                       */}
-                    <div
-                        id = 'largeVideoWrapper'
-                        onTouchEnd = { this._onDoubleTap }
-                        role = 'figure' >
+                    <div id = 'largeVideoWrapper'>
                         <video
-                            autoPlay = { !_noAutoPlayVideo }
+                            autoPlay = { !this.props._noAutoPlayVideo }
                             id = 'largeVideo'
                             muted = { true }
                             playsInline = { true } /* for Safari on iOS to work */ />
@@ -124,19 +107,6 @@ class LargeVideo extends Component<Props> {
                     || <Captions /> }
             </div>
         );
-    }
-
-    _clearTapTimeout: () => void;
-
-    /**
-     * Clears the '_tappedTimout'.
-     *
-     * @private
-     * @returns {void}
-     */
-    _clearTapTimeout() {
-        clearTimeout(this._tappedTimeout);
-        this._tappedTimeout = undefined;
     }
 
     /**
@@ -151,39 +121,12 @@ class LargeVideo extends Component<Props> {
 
         styles.backgroundColor = _customBackgroundColor || interfaceConfig.DEFAULT_BACKGROUND;
 
-        if (this.props._backgroundAlpha !== undefined) {
-            const alphaColor = setColorAlpha(styles.backgroundColor, this.props._backgroundAlpha);
-
-            styles.backgroundColor = alphaColor;
-        }
-
         if (_customBackgroundImageUrl) {
             styles.backgroundImage = `url(${_customBackgroundImageUrl})`;
             styles.backgroundSize = 'cover';
         }
 
         return styles;
-    }
-
-    _onDoubleTap: () => void;
-
-    /**
-     * Sets view to tile view on double tap.
-     *
-     * @param {Object} e - The event.
-     * @private
-     * @returns {void}
-     */
-    _onDoubleTap(e) {
-        e.stopPropagation();
-        e.preventDefault();
-
-        if (this._tappedTimeout) {
-            this._clearTapTimeout();
-            this.props.dispatch(setTileView(true));
-        } else {
-            this._tappedTimeout = setTimeout(this._clearTapTimeout, 300);
-        }
     }
 }
 
@@ -198,15 +141,19 @@ class LargeVideo extends Component<Props> {
 function _mapStateToProps(state) {
     const testingConfig = state['features/base/config'].testing;
     const { backgroundColor, backgroundImageUrl } = state['features/dynamic-branding'];
+    const { isOpen: isModalDialogOpen } = state['features/videoapi/modal-dialog'];
     const { isOpen: isChatOpen } = state['features/chat'];
 
     return {
-        _backgroundAlpha: state['features/base/config'].backgroundAlpha,
         _customBackgroundColor: backgroundColor,
         _customBackgroundImageUrl: backgroundImageUrl,
-        _isChatOpen: isChatOpen,
+        _needShift: isModalDialogOpen || isChatOpen,
         _noAutoPlayVideo: testingConfig?.noAutoPlayVideo
     };
 }
 
-export default connect(_mapStateToProps)(LargeVideo);
+const _mapDispatchToProps = {
+    _fetchCustomBrandingData: fetchCustomBrandingData
+};
+
+export default connect(_mapStateToProps, _mapDispatchToProps)(LargeVideo);

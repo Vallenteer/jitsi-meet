@@ -3,6 +3,7 @@
 import { createToolbarEvent, sendAnalytics } from '../../../analytics';
 import { translate } from '../../../base/i18n';
 import { IconSettings } from '../../../base/icons';
+import { IconImageSettingsDark } from '../../../base/icons/videoapi';
 import { connect } from '../../../base/redux';
 import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
 import { openSettingsDialog } from '../../actions';
@@ -29,9 +30,8 @@ type Props = AbstractButtonProps & {
  */
 class SettingsButton extends AbstractButton<Props, *> {
     accessibilityLabel = 'toolbar.accessibilityLabel.Settings';
-    icon = IconSettings;
+    iconImage = IconImageSettingsDark;
     label = 'toolbar.Settings';
-    tooltip = 'toolbar.Settings';
 
     /**
      * Handles clicking / pressing the button, and opens the appropriate dialog.
@@ -42,15 +42,7 @@ class SettingsButton extends AbstractButton<Props, *> {
     _handleClick() {
         const {
             defaultTab = SETTINGS_TABS.DEVICES,
-            dispatch,
-            handleClick
-        } = this.props;
-
-        if (handleClick) {
-            handleClick();
-
-            return;
-        }
+            dispatch } = this.props;
 
         sendAnalytics(createToolbarEvent('settings'));
         dispatch(openSettingsDialog(defaultTab));

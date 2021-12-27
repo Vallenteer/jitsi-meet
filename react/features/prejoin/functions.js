@@ -37,6 +37,16 @@ export function isDisplayNameRequired(state: Object): boolean {
 }
 
 /**
+ * Selector for determining if the user has chosen to skip prejoin page.
+ *
+ * @param {Object} state - The state of the app.
+ * @returns {boolean}
+ */
+export function isPrejoinSkipped(state: Object) {
+    return state['features/prejoin'].userSelectedSkipPrejoin;
+}
+
+/**
  * Returns the text for the prejoin status bar.
  *
  * @param {Object} state - The state of the app.
@@ -120,7 +130,7 @@ export function getRawError(state: Object): string {
 }
 
 /**
- * Selector for getting the visibility state for the 'JoinByPhoneDialog'.
+ * Selector for getting the visiblity state for the 'JoinByPhoneDialog'.
  *
  * @param {Object} state - The state of the app.
  * @returns {boolean}
@@ -136,22 +146,18 @@ export function isJoinByPhoneDialogVisible(state: Object): boolean {
  * @param {Object} state - The state of the app.
  * @returns {boolean}
  */
-export function isPrejoinPageVisible(state: Object): boolean {
+export function isPrejoinPageEnabled(state: Object): boolean {
     return navigator.product !== 'ReactNative'
-        && state['features/base/config'].prejoinConfig?.enabled
-        && state['features/prejoin']?.showPrejoin
-        && !(state['features/base/config'].enableForcedReload && state['features/prejoin'].skipPrejoinOnReload);
+        && state['features/base/config'].prejoinPageEnabled
+        && !state['features/base/settings'].userSelectedSkipPrejoin;
 }
 
 /**
- * Returns true if we should auto-knock in case lobby is enabled for the room.
+ * Returns true if the prejoin page is visible & active.
  *
  * @param {Object} state - The state of the app.
  * @returns {boolean}
  */
-export function shouldAutoKnock(state: Object): boolean {
-    const { iAmRecorder, iAmSipGateway, autoKnockLobby } = state['features/base/config'];
-
-    return (isPrejoinPageVisible(state) || autoKnockLobby || (iAmRecorder && iAmSipGateway))
-        && !state['features/lobby'].knocking;
+export function isPrejoinPageVisible(state: Object): boolean {
+    return isPrejoinPageEnabled(state) && state['features/prejoin']?.showPrejoin;
 }

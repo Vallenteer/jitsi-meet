@@ -1,14 +1,14 @@
 {
-  "android_package_name": "org.jitsi.meet",
+  "android_package_name": "code.videoapi",
   "prefer_related_applications": true,
   "related_applications": [
     {
-      "id": "org.jitsi.meet",
+      "id": "code.videoapi",
       "platform": "chromeos_play"
     }
   ],
-  "short_name": "Jitsi Meet",
-  "name": "Jitsi Meet",
+  "short_name": "VideoAPI",
+  "name": "VideoAPI",
   "icons": [
     {
       "src": "static/pwa/icons/icon192.png",
@@ -28,9 +28,8 @@
     }
   ],
   "start_url": "/",
-  "background_color": "#17A0DB",
+  "background_color": "#CCCCCC",
   "display": "standalone",
   "scope": "/",
   "theme_color": "#17A0DB"
  }
- 

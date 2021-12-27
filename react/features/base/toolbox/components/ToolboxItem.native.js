@@ -19,12 +19,31 @@ export default class ToolboxItem extends AbstractToolboxItem<Props> {
      * @returns {ReactElement}
      */
     _renderIcon() {
-        const { styles } = this.props;
+        const { styles, labelPlacement, showLabel } = this.props;
+
+        const localStyle = styles.iconStyle || {
+            alignItems: 'center',
+            display: 'flex',
+            alignSelf: 'center'
+        }
+        if (showLabel && labelPlacement === 'bottom') {
+            localStyle.borderRadius = styles.style.borderRadius || 0;
+            localStyle.borderWidth = styles.style.borderWidth ;
+            localStyle.width = styles.style.width;
+            localStyle.height = styles.style.height;
+            localStyle.backgroundColor = styles.style.backgroundColor;
+            localStyle.alignSelf = 'center';
+            localStyle.alignItems = 'center';
+            localStyle.justifyContent = 'center';
+
+
+        }
+        console.log( localStyle)
 
         return (
             <Icon
                 src = { this.props.icon }
-                style = { styles && styles.iconStyle } />
+                style = { localStyle } />
         );
     }
 
@@ -42,7 +61,8 @@ export default class ToolboxItem extends AbstractToolboxItem<Props> {
             onClick,
             showLabel,
             styles,
-            toggled
+            toggled,
+            labelPlacement
         } = this.props;
 
         let children = this._renderIcon();
@@ -55,10 +75,28 @@ export default class ToolboxItem extends AbstractToolboxItem<Props> {
             // XXX TouchableHighlight requires 1 child. If there's a need to
             // show both the icon and the label, then these two need to be
             // wrapped in a View.
+            const localStyle = { ...style };
+            const localLabelStyle = { ...(styles.labelStyle || {
+                alignItems: 'center'
+            }) };
+            if (labelPlacement === 'bottom') {
+                localStyle.flexDirection = 'column';
+                localStyle.display = 'flex';
+                localStyle.alignItems = 'center';
+                localStyle.height = 100;
+
+                delete(localStyle.borderRadius);
+                delete(localStyle.borderWidth);
+                delete(localStyle.backgroundColor);
+                delete(localStyle.flex);
+
+                localLabelStyle.height = 50;
+                localLabelStyle.textAlign = 'center'
+            }
             children = (
-                <View style = { style }>
+                <View style = { localStyle }>
                     { children }
-                    <Text style = { styles && styles.labelStyle }>
+                    <Text style = { localLabelStyle }>
                         { this.label }
                     </Text>
                     { elementAfter }
@@ -69,6 +107,7 @@ export default class ToolboxItem extends AbstractToolboxItem<Props> {
             // (above).
             style = undefined;
         }
+
 
         return (
             <TouchableHighlight

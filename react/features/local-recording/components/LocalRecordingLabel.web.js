@@ -1,11 +1,11 @@
 // @flow
 
+import Tooltip from '@atlaskit/tooltip';
 import React, { Component } from 'react';
 
 import { translate } from '../../base/i18n/index';
-import { Label } from '../../base/label/index';
+import { CircularLabel } from '../../base/label/index';
 import { connect } from '../../base/redux';
-import { Tooltip } from '../../base/tooltip';
 
 
 /**
@@ -14,25 +14,20 @@ import { Tooltip } from '../../base/tooltip';
 type Props = {
 
     /**
-     * Whether this is the Jibri recorder participant.
-     */
-     _iAmRecorder: boolean,
-
-     /**
-      * Whether local recording is engaged or not.
-      */
-     _isEngaged: boolean,
-
-    /**
      * Invoked to obtain translated strings.
      */
     t: Function,
+
+    /**
+     * Whether local recording is engaged or not.
+     */
+    isEngaged: boolean
 };
 
 /**
  * React Component for displaying a label when local recording is engaged.
  *
- * @augments Component
+ * @extends Component
  */
 class LocalRecordingLabel extends Component<Props> {
 
@@ -43,17 +38,17 @@ class LocalRecordingLabel extends Component<Props> {
      * @returns {ReactElement}
      */
     render() {
-        if (!this.props._isEngaged || this.props._iAmRecorder) {
+        if (!this.props.isEngaged) {
             return null;
         }
 
         return (
             <Tooltip
                 content = { this.props.t('localRecording.labelToolTip') }
-                position = { 'bottom' }>
-                <Label
+                position = { 'left' }>
+                <CircularLabel
                     className = 'local-rec'
-                    text = { this.props.t('localRecording.label') } />
+                    label = { this.props.t('localRecording.label') } />
             </Tooltip>
         );
     }
@@ -71,11 +66,9 @@ class LocalRecordingLabel extends Component<Props> {
  */
 function _mapStateToProps(state) {
     const { isEngaged } = state['features/local-recording'];
-    const { iAmRecorder } = state['features/base/config'];
 
     return {
-        _isEngaged: isEngaged,
-        _iAmRecorder: iAmRecorder
+        isEngaged
     };
 }
 

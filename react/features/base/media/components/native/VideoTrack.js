@@ -12,7 +12,7 @@ import styles from './styles';
 /**
  * Component that renders video element for a specified video track.
  *
- * @augments AbstractVideoTrack
+ * @extends AbstractVideoTrack
  */
 class VideoTrack extends AbstractVideoTrack<Props> {
     /**

@@ -35,7 +35,7 @@ export default class AbstractInsecureRoomNameLabel extends PureComponent<Props> 
     }
 
     /**
-     * Renders the platform dependent content.
+     * Renders the platform dependant content.
      *
      * @returns {ReactElement}
      */

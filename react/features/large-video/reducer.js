@@ -5,7 +5,7 @@ import { ReducerRegistry } from '../base/redux';
 
 import {
     SELECT_LARGE_VIDEO_PARTICIPANT,
-    UPDATE_KNOWN_LARGE_VIDEO_RESOLUTION, UPDATE_LAST_LARGE_VIDEO_MEDIA_EVENT
+    UPDATE_KNOWN_LARGE_VIDEO_RESOLUTION
 } from './actionTypes';
 
 ReducerRegistry.register('features/large-video', (state = {}, action) => {
@@ -36,13 +36,6 @@ ReducerRegistry.register('features/large-video', (state = {}, action) => {
             ...state,
             resolution: action.resolution
         };
-
-    case UPDATE_LAST_LARGE_VIDEO_MEDIA_EVENT:
-        return {
-            ...state,
-            lastMediaEvent: action.name
-        };
-
     }
 
     return state;

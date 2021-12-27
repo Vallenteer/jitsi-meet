@@ -4,13 +4,11 @@ import {
     CLEAR_RECORDING_SESSIONS,
     RECORDING_SESSION_UPDATED,
     SET_PENDING_RECORDING_NOTIFICATION_UID,
-    SET_SELECTED_RECORDING_SERVICE,
     SET_STREAM_KEY
 } from './actionTypes';
 
 const DEFAULT_STATE = {
     pendingNotificationUids: {},
-    selectedRecordingService: '',
     sessionDatas: []
 };
 
@@ -49,13 +47,6 @@ ReducerRegistry.register(STORE_NAME,
             return {
                 ...state,
                 pendingNotificationUids
-            };
-        }
-
-        case SET_SELECTED_RECORDING_SERVICE: {
-            return {
-                ...state,
-                selectedRecordingService: action.selectedRecordingService
             };
         }
 

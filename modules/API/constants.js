@@ -9,9 +9,9 @@ import { parseURLParams } from '../../react/features/base/util/parseURLParams';
 /**
  * JitsiMeetExternalAPI id - unique for a webpage.
  */
-export const API_ID = parseURLParams(window.location).jitsi_meet_external_api_id;
+export const API_ID = parseURLParams(window.location).videoapi_external_api_id;
 
 /**
- * The payload name for the datachannel/endpoint text message event.
+ * The payload name for the datachannel/endpoint text message event
  */
 export const ENDPOINT_TEXT_MESSAGE_NAME = 'endpoint-text-message';

@@ -1,9 +1,7 @@
-// @flow
-
-import { DrawerActions } from '@react-navigation/native';
 import React from 'react';
 import {
     Animated,
+    Keyboard,
     SafeAreaView,
     TextInput,
     TouchableHighlight,
@@ -15,82 +13,56 @@ import { getName } from '../../app/functions';
 import { ColorSchemeRegistry } from '../../base/color-scheme';
 import { translate } from '../../base/i18n';
 import { Icon, IconMenu, IconWarning } from '../../base/icons';
-import JitsiStatusBar from '../../base/modal/components/JitsiStatusBar';
-import { LoadingIndicator, Text } from '../../base/react';
+import { MEDIA_TYPE } from '../../base/media';
+import { Header, LoadingIndicator, Text } from '../../base/react';
 import { connect } from '../../base/redux';
-import BaseTheme from '../../base/ui/components/BaseTheme.native';
+import { ColorPalette } from '../../base/styles';
+import {
+    createDesiredLocalTracks,
+    destroyLocalDesktopTrackIfExists,
+    destroyLocalTracks
+} from '../../base/tracks';
+import { HelpView } from '../../help';
+import { DialInSummary } from '../../invite';
+import { SettingsView } from '../../settings';
+import { setSideBarVisible } from '../actions';
 
 import {
     AbstractWelcomePage,
-    _mapStateToProps as _abstractMapStateToProps,
-    type Props as AbstractProps
+    _mapStateToProps as _abstractMapStateToProps
 } from './AbstractWelcomePage';
+import LocalVideoTrackUnderlay from './LocalVideoTrackUnderlay';
 import VideoSwitch from './VideoSwitch';
-import WelcomePageTabs from './WelcomePageTabs';
+import WelcomePageLists from './WelcomePageLists';
+import WelcomePageSideBar from './WelcomePageSideBar';
 import styles, { PLACEHOLDER_TEXT_COLOR } from './styles';
-
-
-type Props = AbstractProps & {
-
-    /**
-     * The color schemed style of the Header component.
-     */
-    _headerStyles: Object,
-
-    /**
-     * Default prop for navigating between screen components(React Navigation).
-     */
-    navigation: Object,
-
-    /**
-     * Default prop for navigating between screen components(React Navigation).
-     */
-    route: Object,
-
-    /**
-     * The translate function.
-     */
-    t: Function
-};
 
 /**
  * The native container rendering the welcome page.
  *
- * @augments AbstractWelcomePage
+ * @extends AbstractWelcomePage
  */
-class WelcomePage extends AbstractWelcomePage<*> {
+class WelcomePage extends AbstractWelcomePage {
     /**
      * Constructor of the Component.
      *
      * @inheritdoc
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
-        // $FlowExpectedError
         this.state._fieldFocused = false;
-
-        // $FlowExpectedError
         this.state.hintBoxAnimation = new Animated.Value(0);
 
         // Bind event handlers so they are only bound once per instance.
         this._onFieldFocusChange = this._onFieldFocusChange.bind(this);
+        this._onShowSideBar = this._onShowSideBar.bind(this);
         this._renderHintBox = this._renderHintBox.bind(this);
 
         // Specially bind functions to avoid function definition on render.
         this._onFieldBlur = this._onFieldFocusChange.bind(this, false);
         this._onFieldFocus = this._onFieldFocusChange.bind(this, true);
     }
-
-    _onFieldBlur: () => void;
-
-    _onFieldFocus: () => void;
-
-    _onJoin: () => void;
-
-    _onRoomChange: (string) => void;
-
-    _updateRoomname: () => void;
 
     /**
      * Implements React's {@link Component#componentDidMount()}. Invoked
@@ -105,28 +77,21 @@ class WelcomePage extends AbstractWelcomePage<*> {
 
         this._updateRoomname();
 
-        const {
-            _headerStyles,
-            navigation
-        } = this.props;
+        const { dispatch } = this.props;
 
-        navigation.setOptions({
-            headerLeft: () => (
-                <TouchableOpacity
-                    /* eslint-disable-next-line react/jsx-no-bind */
-                    onPress = { () =>
-                        navigation.dispatch(DrawerActions.openDrawer()) }
-                    style = { styles.drawerNavigationIcon }>
-                    <Icon
-                        size = { 20 }
-                        src = { IconMenu }
-                        style = { _headerStyles.headerButtonIcon } />
-                </TouchableOpacity>
-            ),
-            // eslint-disable-next-line react/no-multi-comp
-            headerRight: () =>
-                <VideoSwitch />
-        });
+        if (this.props._settings.startAudioOnly) {
+            dispatch(destroyLocalTracks());
+        } else {
+            dispatch(destroyLocalDesktopTrackIfExists());
+
+            // Make sure we don't request the permission for the camera from
+            // the start. We will, however, create a video track iff the user
+            // already granted the permission.
+            navigator.permissions.query({ name: 'camera' }).then(response => {
+                response === 'granted'
+                    && dispatch(createDesiredLocalTracks(MEDIA_TYPE.VIDEO));
+            });
+        }
     }
 
     /**
@@ -188,13 +153,10 @@ class WelcomePage extends AbstractWelcomePage<*> {
             styles.messageContainer,
             styles.hintContainer,
             {
-                // $FlowExpectedError
                 opacity: this.state.hintBoxAnimation
             }
         ];
     }
-
-    _onFieldFocusChange: (boolean) => void;
 
     /**
      * Callback for when the room field's focus changes so the hint box
@@ -205,42 +167,35 @@ class WelcomePage extends AbstractWelcomePage<*> {
      * @returns {void}
      */
     _onFieldFocusChange(focused) {
-        if (focused) {
-            // Stop placeholder animation.
-            // $FlowExpectedError
-            this._clearTimeouts();
-            this.setState({
-                _fieldFocused: true,
-                roomPlaceholder: ''
+        focused
+            && this.setState({
+                _fieldFocused: true
             });
-        } else {
-            // Restart room placeholder animation.
-            this._updateRoomname();
-        }
 
         Animated.timing(
-
-            // $FlowExpectedError
             this.state.hintBoxAnimation,
-
-            // $FlowExpectedError
             {
                 duration: 300,
                 toValue: focused ? 1 : 0
             })
             .start(animationState =>
-
-                // $FlowExpectedError
                 animationState.finished
-
-                // $FlowExpectedError
-                && !focused
+                    && !focused
                     && this.setState({
                         _fieldFocused: false
                     }));
     }
 
-    _renderHintBox: () => React$Element<any>;
+    /**
+     * Toggles the side bar.
+     *
+     * @private
+     * @returns {void}
+     */
+    _onShowSideBar() {
+        Keyboard.dismiss();
+        this.props.dispatch(setSideBarVisible(true));
+    }
 
     /**
      * Renders the hint box if necessary.
@@ -249,10 +204,9 @@ class WelcomePage extends AbstractWelcomePage<*> {
      * @returns {React$Node}
      */
     _renderHintBox() {
-        const { t } = this.props;
-
-        // $FlowExpectedError
         if (this.state._fieldFocused) {
+            const { t } = this.props;
+
             return (
                 <Animated.View style = { this._getHintBoxStyle() }>
                     <View style = { styles.hintTextContainer } >
@@ -306,7 +260,7 @@ class WelcomePage extends AbstractWelcomePage<*> {
                     { t('welcomepage.accessibilityLabel.join') }
                 onPress = { this._onJoin }
                 style = { styles.button }
-                underlayColor = { BaseTheme.palette.ui12 }>
+                underlayColor = { ColorPalette.white }>
                 { children }
             </TouchableHighlight>
         );
@@ -319,22 +273,28 @@ class WelcomePage extends AbstractWelcomePage<*> {
      */
     _renderFullUI() {
         const roomnameAccLabel = 'welcomepage.accessibilityLabel.roomname';
-        const { t } = this.props;
+        const { _headerStyles, t } = this.props;
 
         return (
-            <>
-                <JitsiStatusBar />
-                <View style = { styles.welcomePage }>
+            <LocalVideoTrackUnderlay style = { styles.welcomePage }>
+                <View style = { _headerStyles.page }>
+                    <Header style = { styles.header }>
+                        <TouchableOpacity onPress = { this._onShowSideBar } >
+                            <Icon
+                                src = { IconMenu }
+                                style = { _headerStyles.headerButtonIcon } />
+                        </TouchableOpacity>
+                        <VideoSwitch />
+                    </Header>
                     <SafeAreaView style = { styles.roomContainer } >
                         <View style = { styles.joinControls } >
                             <Text style = { styles.enterRoomText }>
                                 { t('welcomepage.roomname') }
                             </Text>
-                            {/* // $FlowExpectedError*/}
                             <TextInput
                                 accessibilityLabel = { t(roomnameAccLabel) }
-                                autoCapitalize = { 'none' }
-                                autoComplete = { 'off' }
+                                autoCapitalize = 'none'
+                                autoComplete = 'off'
                                 autoCorrect = { false }
                                 autoFocus = { false }
                                 onBlur = { this._onFieldBlur }
@@ -344,13 +304,10 @@ class WelcomePage extends AbstractWelcomePage<*> {
                                 placeholder = { this.state.roomPlaceholder }
                                 placeholderTextColor = { PLACEHOLDER_TEXT_COLOR }
                                 returnKeyType = { 'go' }
-                                spellCheck = { false }
                                 style = { styles.textInput }
                                 underlineColorAndroid = 'transparent'
                                 value = { this.state.room } />
                             {
-
-                                // $FlowExpectedError
                                 this._renderInsecureRoomNameWarning()
                             }
                             {
@@ -358,10 +315,11 @@ class WelcomePage extends AbstractWelcomePage<*> {
                             }
                         </View>
                     </SafeAreaView>
-                    {/* // $FlowExpectedError*/}
-                    <WelcomePageTabs disabled = { this.state._fieldFocused } />
+                    <WelcomePageLists disabled = { this.state._fieldFocused } />
                 </View>
-            </>
+                <WelcomePageSideBar />
+                { this._renderWelcomePageModals() }
+            </LocalVideoTrackUnderlay>
         );
     }
 
@@ -380,6 +338,19 @@ class WelcomePage extends AbstractWelcomePage<*> {
                 </Text>
             </View>
         );
+    }
+
+    /**
+     * Renders JitsiModals that are supposed to be on the welcome page.
+     *
+     * @returns {Array<ReactElement>}
+     */
+    _renderWelcomePageModals() {
+        return [
+            <HelpView key = 'helpView' />,
+            <DialInSummary key = 'dialInSummary' />,
+            <SettingsView key = 'settings' />
+        ];
     }
 }
 

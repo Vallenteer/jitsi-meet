@@ -2,7 +2,6 @@
 import _ from 'lodash';
 
 import { PREJOIN_INITIALIZED } from '../../prejoin/actionTypes';
-import { setPrejoinPageVisibility } from '../../prejoin/actions';
 import { APP_WILL_MOUNT } from '../app';
 import { setAudioOnly } from '../audio-only';
 import { SET_LOCATION_URL } from '../connection/actionTypes'; // minimize imports to avoid circular imports
@@ -14,7 +13,6 @@ import { parseURLParams } from '../util';
 import { SETTINGS_UPDATED } from './actionTypes';
 import { updateSettings } from './actions';
 import { handleCallIntegrationChange, handleCrashReportingChange } from './functions';
-
 
 /**
  * The middleware of the feature base/settings. Distributes changes to the state
@@ -30,7 +28,6 @@ MiddlewareRegistry.register(store => next => action => {
     switch (action.type) {
     case APP_WILL_MOUNT:
         _initializeCallIntegration(store);
-        _initializeShowPrejoin(store);
         break;
     case PREJOIN_INITIALIZED: {
         _maybeUpdateDisplayName(store);
@@ -49,21 +46,6 @@ MiddlewareRegistry.register(store => next => action => {
 
     return result;
 });
-
-/**
- * Overwrites the showPrejoin flag based on cached used selection for showing prejoin screen.
- *
- * @param {Store} store - The redux store.
- * @private
- * @returns {void}
- */
-function _initializeShowPrejoin({ dispatch, getState }) {
-    const { userSelectedSkipPrejoin } = getState()['features/base/settings'];
-
-    if (userSelectedSkipPrejoin) {
-        dispatch(setPrejoinPageVisibility(false));
-    }
-}
 
 /**
  * Initializes the audio device handler based on the `disableCallIntegration` setting.
@@ -135,7 +117,7 @@ function _maybeSetAudioOnly(
         { dispatch },
         { settings: { startAudioOnly } }) {
     if (typeof startAudioOnly === 'boolean') {
-        dispatch(setAudioOnly(startAudioOnly));
+        dispatch(setAudioOnly(startAudioOnly, true));
     }
 }
 
@@ -153,11 +135,9 @@ function _maybeUpdateDisplayName({ dispatch, getState }) {
     if (hasJwt) {
         const displayName = getJwtName(state);
 
-        if (displayName) {
-            dispatch(updateSettings({
-                displayName
-            }));
-        }
+        dispatch(updateSettings({
+            displayName
+        }));
     }
 }
 

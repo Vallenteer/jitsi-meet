@@ -1,11 +1,8 @@
 // @flow
 
-import { AtlasKitThemeProvider } from '@atlaskit/theme';
 import React from 'react';
 
 import { DialogContainer } from '../../base/dialog';
-import GlobalStyles from '../../base/ui/components/GlobalStyles';
-import JitsiThemeProvider from '../../base/ui/components/JitsiThemeProvider';
 import { ChromeExtensionBanner } from '../../chrome-extension-banner';
 
 import { AbstractApp } from './AbstractApp';
@@ -17,7 +14,7 @@ import '../reducers';
 /**
  * Root app {@code Component} on Web/React.
  *
- * @augments AbstractApp
+ * @extends AbstractApp
  */
 export class App extends AbstractApp {
     /**
@@ -28,13 +25,10 @@ export class App extends AbstractApp {
      */
     _createMainElement(component, props) {
         return (
-            <JitsiThemeProvider>
-                <AtlasKitThemeProvider mode = 'dark'>
-                    <GlobalStyles />
-                    <ChromeExtensionBanner />
-                    { super._createMainElement(component, props) }
-                </AtlasKitThemeProvider>
-            </JitsiThemeProvider>
+            <div className='videoapi-main-container' mode = 'dark'>
+                <ChromeExtensionBanner />
+                { super._createMainElement(component, props) }
+            </div>
         );
     }
 
@@ -45,11 +39,9 @@ export class App extends AbstractApp {
      */
     _renderDialogContainer() {
         return (
-            <JitsiThemeProvider>
-                <AtlasKitThemeProvider mode = 'dark'>
-                    <DialogContainer />
-                </AtlasKitThemeProvider>
-            </JitsiThemeProvider>
+            <div className='videoapi-dialog-container' mode = 'dark'>
+                <DialogContainer />
+            </div>
         );
     }
 }

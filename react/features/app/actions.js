@@ -24,8 +24,8 @@ import {
     parseURIString,
     toURLString
 } from '../base/util';
-import { isVpaasMeeting } from '../jaas/functions';
-import { NOTIFICATION_TIMEOUT_TYPE, clearNotifications, showNotification } from '../notifications';
+import { isVpaasMeeting } from '../billing-counter/functions';
+import { clearNotifications, showNotification } from '../notifications';
 import { setFatalError } from '../overlay';
 
 import {
@@ -49,6 +49,24 @@ declare var interfaceConfig: Object;
  */
 export function appNavigate(uri: ?string) {
     return async (dispatch: Dispatch<any>, getState: Function) => {
+        // Disconnect from any current conference.
+        // FIXME: unify with web.
+        if (navigator.product === 'ReactNative') {
+            dispatch(disconnect());
+        }
+
+        // There are notifications now that gets displayed after we technically left
+        // the conference, but we're still on the conference screen.
+        dispatch(clearNotifications());
+
+        if (!uri) {
+            return;
+        }
+
+        if (uri.length === 42 && uri.endsWith('-null')) { // '/' + uuid + '-null'
+            return;
+        }
+
         let location = parseURIString(uri);
 
         // If the specified location (URI) does not identify a host, use the app's
@@ -75,15 +93,6 @@ export function appNavigate(uri: ?string) {
         const { contextRoot, host, room } = location;
         const locationURL = new URL(location.toString());
 
-        // Disconnect from any current conference.
-        // FIXME: unify with web.
-        if (navigator.product === 'ReactNative') {
-            dispatch(disconnect());
-        }
-
-        // There are notifications now that gets displayed after we technically left
-        // the conference, but we're still on the conference screen.
-        dispatch(clearNotifications());
 
         dispatch(configWillLoad(locationURL, room));
 
@@ -328,7 +337,7 @@ export function maybeRedirectToWelcomePage(options: Object = {}) {
             dispatch(showNotification({
                 titleArguments: { appName: getName() },
                 titleKey: 'dialog.thankYou'
-            }, NOTIFICATION_TIMEOUT_TYPE.STICKY));
+            }));
         }
 
         // if Welcome page is enabled redirect to welcome page after 3 sec, if

@@ -26,19 +26,9 @@ const GESTURE_SPEED_THRESHOLD = 0.2;
 type Props = {
 
     /**
-     * The height of the screen.
-     */
-    _height: number,
-
-    /**
      * The color-schemed stylesheet of the feature.
      */
     _styles: StyleType,
-
-    /**
-     * Whether to add padding to scroll view.
-     */
-    addScrollViewPadding?: boolean,
 
     /**
      * The children to be displayed within this component.
@@ -59,22 +49,7 @@ type Props = {
     /**
      * Function to render a bottom sheet header element, if necessary.
      */
-    renderHeader: ?Function,
-
-    /**
-     * Function to render a bottom sheet footer element, if necessary.
-     */
-    renderFooter: ?Function,
-
-    /**
-     * Whether to show sliding view or not.
-     */
-    showSlidingView?: boolean,
-
-    /**
-     * The component's external style.
-     */
-    style: Object
+    renderHeader: ?Function
 };
 
 /**
@@ -82,16 +57,6 @@ type Props = {
  */
 class BottomSheet extends PureComponent<Props> {
     panResponder: Object;
-
-    /**
-     * Default values for {@code BottomSheet} component's properties.
-     *
-     * @static
-     */
-    static defaultProps = {
-        addScrollViewPadding: true,
-        showSlidingView: true
-    };
 
     /**
      * Instantiates a new component.
@@ -115,15 +80,7 @@ class BottomSheet extends PureComponent<Props> {
      * @returns {ReactElement}
      */
     render() {
-        const {
-            _height,
-            _styles,
-            addScrollViewPadding,
-            renderHeader,
-            renderFooter,
-            showSlidingView,
-            style
-        } = this.props;
+        const { _styles, renderHeader } = this.props;
 
         return (
             <SlidingView
@@ -131,7 +88,7 @@ class BottomSheet extends PureComponent<Props> {
                 accessibilityViewIsModal = { true }
                 onHide = { this.props.onCancel }
                 position = 'bottom'
-                show = { showSlidingView }>
+                show = { true }>
                 <View
                     pointerEvents = 'box-none'
                     style = { styles.sheetContainer }>
@@ -142,26 +99,15 @@ class BottomSheet extends PureComponent<Props> {
                     <SafeAreaView
                         style = { [
                             styles.sheetItemContainer,
-                            renderHeader
-                                ? _styles.sheetHeader
-                                : _styles.sheet,
-                            renderFooter && _styles.sheetFooter,
-                            style,
-                            {
-                                maxHeight: _height - 100
-                            }
+                            _styles.sheet
                         ] }
                         { ...this.panResponder.panHandlers }>
                         <ScrollView
                             bounces = { false }
                             showsVerticalScrollIndicator = { false }
-                            style = { [
-                                renderFooter && _styles.sheet,
-                                addScrollViewPadding && styles.scrollView
-                            ] } >
+                            style = { styles.scrollView } >
                             { this.props.children }
                         </ScrollView>
-                        { renderFooter && renderFooter() }
                     </SafeAreaView>
                 </View>
             </SlidingView>
@@ -221,8 +167,7 @@ class BottomSheet extends PureComponent<Props> {
  */
 function _mapStateToProps(state) {
     return {
-        _styles: ColorSchemeRegistry.get(state, 'BottomSheet'),
-        _height: state['features/base/responsive-ui'].clientHeight
+        _styles: ColorSchemeRegistry.get(state, 'BottomSheet')
     };
 }
 

@@ -3,7 +3,7 @@
 import { Component } from 'react';
 
 /**
- * {@code AbstractCaptions} Properties.
+ * {@code AbstractCaptions} properties.
  */
 export type AbstractCaptionsProps = {
 

@@ -6,7 +6,7 @@ import { IconDownload } from '../../base/icons';
 import { connect } from '../../base/redux';
 import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
 import { openURLInBrowser } from '../../base/util';
-import { isVpaasMeeting } from '../../jaas/functions';
+
 
 type Props = AbstractButtonProps & {
 
@@ -23,7 +23,6 @@ class DownloadButton extends AbstractButton<Props, *> {
     accessibilityLabel = 'toolbar.accessibilityLabel.download';
     icon = IconDownload;
     label = 'toolbar.download';
-    tooltip = 'toolbar.download';
 
     /**
      * Handles clicking / pressing the button, and opens a new window with the user documentation.
@@ -32,16 +31,8 @@ class DownloadButton extends AbstractButton<Props, *> {
      * @returns {void}
      */
     _handleClick() {
-        const { _downloadAppsUrl, handleClick } = this.props;
-
-        if (handleClick) {
-            handleClick();
-
-            return;
-        }
-
         sendAnalytics(createToolbarEvent('download.pressed'));
-        openURLInBrowser(_downloadAppsUrl);
+        openURLInBrowser(this.props._downloadAppsUrl);
     }
 }
 
@@ -54,7 +45,7 @@ class DownloadButton extends AbstractButton<Props, *> {
  */
 function _mapStateToProps(state: Object) {
     const { downloadAppsUrl } = state['features/base/config'].deploymentUrls || {};
-    const visible = typeof downloadAppsUrl === 'string' && !isVpaasMeeting(state);
+    const visible = typeof downloadAppsUrl === 'string';
 
     return {
         _downloadAppsUrl: downloadAppsUrl,

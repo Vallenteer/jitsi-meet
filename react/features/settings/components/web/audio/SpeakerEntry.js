@@ -14,7 +14,6 @@ const TEST_SOUND_PATH = 'sounds/ring.wav';
  */
 type Props = {
 
-
     /**
      * The text label for the entry.
      */
@@ -26,16 +25,6 @@ type Props = {
     isSelected: boolean,
 
     /**
-     * Flag controlling the selection state of the entry.
-     */
-    index: number,
-
-    /**
-     * Flag controlling the selection state of the entry.
-     */
-    length: number,
-
-    /**
      * The deviceId of the speaker.
      */
     deviceId: string,
@@ -44,14 +33,13 @@ type Props = {
      * Click handler for the component.
      */
     onClick: Function,
-    listHeaderId: string
 };
 
 /**
  * Implements a React {@link Component} which displays an audio
  * output settings entry. The user can click and play a test sound.
  *
- * @augments Component
+ * @extends Component
  */
 export default class SpeakerEntry extends Component<Props> {
     /**
@@ -71,7 +59,6 @@ export default class SpeakerEntry extends Component<Props> {
         this.audioRef = React.createRef();
         this._onTestButtonClick = this._onTestButtonClick.bind(this);
         this._onClick = this._onClick.bind(this);
-        this._onKeyPress = this._onKeyPress.bind(this);
     }
 
     _onClick: () => void;
@@ -84,24 +71,6 @@ export default class SpeakerEntry extends Component<Props> {
     _onClick() {
         this.props.onClick(this.props.deviceId);
     }
-
-    _onKeyPress: () => void;
-
-    /**
-     * Key pressed handler for the entry.
-     *
-     * @param {Object} e - The event.
-     * @private
-     *
-     * @returns {void}
-     */
-    _onKeyPress(e) {
-        if (e.key === ' ') {
-            e.preventDefault();
-            this.props.onClick(this.props.deviceId);
-        }
-    }
-
 
     _onTestButtonClick: Object => void;
 
@@ -129,35 +98,23 @@ export default class SpeakerEntry extends Component<Props> {
      * @inheritdoc
      */
     render() {
-        const { children, isSelected, index, deviceId, length, listHeaderId } = this.props;
-        const deviceTextId: string = `choose_speaker${deviceId}`;
-        const labelledby: string = `${listHeaderId} ${deviceTextId} `;
+        const { children, isSelected, deviceId } = this.props;
 
         return (
-            <li
-                aria-checked = { isSelected }
-                aria-labelledby = { labelledby }
-                aria-posinset = { index }
-                aria-setsize = { length }
+            <div
                 className = 'audio-preview-speaker'
-                onClick = { this._onClick }
-                onKeyPress = { this._onKeyPress }
-                role = 'radio'
-                tabIndex = { 0 }>
+                onClick = { this._onClick }>
                 <AudioSettingsEntry
                     isSelected = { isSelected }
-                    key = { deviceId }
-                    labelId = { deviceTextId }>
+                    key = { deviceId }>
                     {children}
                 </AudioSettingsEntry>
-                <TestButton
-                    onClick = { this._onTestButtonClick }
-                    onKeyPress = { this._onTestButtonClick } />
+                <TestButton onClick = { this._onTestButtonClick } />
                 <audio
                     preload = 'auto'
                     ref = { this.audioRef }
                     src = { TEST_SOUND_PATH } />
-            </li>
+            </div>
         );
     }
 }

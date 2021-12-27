@@ -1,7 +1,6 @@
 // @flow
 
-import ButtonGroup from '@atlaskit/button/button-group';
-import Button from '@atlaskit/button/standard-button';
+import Button, { ButtonGroup } from '@atlaskit/button';
 import { AtlasKitThemeProvider } from '@atlaskit/theme';
 import React, { Component } from 'react';
 import type { Dispatch } from 'redux';
@@ -87,7 +86,6 @@ class DeepLinkingDesktopPage<P : Props> extends Component<P> {
                             HIDE_DEEP_LINKING_LOGO
                                 ? null
                                 : <img
-                                    alt = { t('welcomepage.logo.logoDeepLinking') }
                                     className = 'logo'
                                     src = 'images/logo-deep-linking.png' />
                         }

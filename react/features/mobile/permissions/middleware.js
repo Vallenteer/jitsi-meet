@@ -2,8 +2,8 @@
 
 import { Alert } from 'react-native';
 
+
 import { isRoomValid } from '../../base/conference';
-import { i18next } from '../../base/i18n';
 import { MiddlewareRegistry } from '../../base/redux';
 import { TRACK_CREATE_ERROR } from '../../base/tracks';
 
@@ -48,20 +48,26 @@ MiddlewareRegistry.register(store => next => action => {
  * @returns {void}
  */
 function _alertPermissionErrorWithSettings(trackType) {
+    // TODO i18n
+    const deviceType = trackType === 'video' ? 'Camera' : 'Microphone';
+
     /* eslint-disable indent */
-    const message = trackType === 'video'
-        ? i18next.t('dialog.permissionCameraRequiredError')
-        : i18next.t('dialog.permissionMicRequiredError');
+
+    const message
+        = `${deviceType
+            } permission is required to participate in conferences with ${
+            trackType}. Please grant it in Settings.`;
+
     /* eslint-ensable indent */
 
     Alert.alert(
-        i18next.t('dialog.permissionErrorTitle'),
+        'Permission required',
         message,
         [
-            { text: i18next.t('dialog.Cancel') },
+            { text: 'Cancel' },
             {
                 onPress: openSettings,
-                text: i18next.t('settings.title')
+                text: 'Settings'
             }
         ],
         { cancelable: false });

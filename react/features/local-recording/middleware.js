@@ -8,7 +8,6 @@ import { i18next } from '../base/i18n';
 import { SET_AUDIO_MUTED } from '../base/media/actionTypes';
 import { MiddlewareRegistry } from '../base/redux';
 import { SETTINGS_UPDATED } from '../base/settings/actionTypes';
-import { NOTIFICATION_TIMEOUT_TYPE } from '../notifications';
 import { showNotification } from '../notifications/actions';
 
 import { localRecordingEngaged, localRecordingUnengaged } from './actions';
@@ -47,16 +46,16 @@ MiddlewareRegistry.register(({ getState, dispatch }) => next => action => {
 
         recordingController.onWarning = (messageKey, messageParams) => {
             dispatch(showNotification({
-                titleKey: 'localRecording.localRecording',
+                title: i18next.t('localRecording.localRecording'),
                 description: i18next.t(messageKey, messageParams)
-            }, NOTIFICATION_TIMEOUT_TYPE.LONG));
+            }, 10000));
         };
 
         recordingController.onNotify = (messageKey, messageParams) => {
             dispatch(showNotification({
-                titleKey: 'localRecording.localRecording',
+                title: i18next.t('localRecording.localRecording'),
                 description: i18next.t(messageKey, messageParams)
-            }, NOTIFICATION_TIMEOUT_TYPE.LONG));
+            }, 10000));
         };
 
         typeof APP === 'object' && typeof APP.keyboardshortcut === 'object'

@@ -6,9 +6,7 @@
  * {
  *     type: DOMINANT_SPEAKER_CHANGED,
  *     participant: {
- *         conference: JitsiConference,
- *         id: string,
- *         previousSpeakers: Array<string>
+ *         id: string
  *     }
  * }
  */
@@ -174,20 +172,12 @@ export const HIDDEN_PARTICIPANT_LEFT = 'HIDDEN_PARTICIPANT_LEFT';
 export const SET_LOADABLE_AVATAR_URL = 'SET_LOADABLE_AVATAR_URL';
 
 /**
- * Raises hand for the local participant.
- * {
- *     type: LOCAL_PARTICIPANT_RAISE_HAND
- * }
- */
-export const LOCAL_PARTICIPANT_RAISE_HAND = 'LOCAL_PARTICIPANT_RAISE_HAND';
-
-/**
- * Updates participant in raise hand queue.
+ * Action to signal that a participant has raise hand.
+ *
  * {
  *     type: RAISE_HAND_UPDATED,
  *     participant: {
- *         id: string,
- *         raiseHand: boolean
+ *          id: string
  *     }
  * }
  */

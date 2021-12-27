@@ -10,11 +10,6 @@ import { Icon } from '../../../../base/icons';
 type Props = {
 
     /**
-     * The id used for the Header-text.
-     */
-    id?: string,
-
-    /**
      * The Icon used for the Header.
      */
     IconComponent: Function,
@@ -30,19 +25,10 @@ type Props = {
  *
  * @returns { ReactElement}
  */
-export default function AudioSettingsHeader({ IconComponent, id, text }: Props) {
+export default function AudioSettingsHeader({ IconComponent, text, onClick }: Props) {
     return (
-        <div
-            className = 'audio-preview-header'
-            role = 'heading'>
-            <div className = 'audio-preview-header-icon'>
-                { <Icon
-                    size = { 20 }
-                    src = { IconComponent } />}
-            </div>
-            <div
-                className = 'audio-preview-header-text'
-                id = { id } >{text}</div>
-        </div>
+        <li className = 'overflow-menu-item' onClick = { onClick }>
+            <div className = 'audio-preview-header-text'>{text}</div>
+        </li>
     );
 }

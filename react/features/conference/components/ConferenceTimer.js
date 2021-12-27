@@ -6,6 +6,7 @@ import { renderConferenceTimer } from '../';
 import { getConferenceTimestamp } from '../../base/conference/functions';
 import { getLocalizedDurationFormatter } from '../../base/i18n';
 import { connect } from '../../base/redux';
+import { getAPIID } from '../../videoapi/api';
 
 /**
  * The type of the React {@code Component} props of {@link ConferenceTimer}.
@@ -16,11 +17,6 @@ type Props = {
      * The UTC timestamp representing the time when first participant joined.
      */
     _startTimestamp: ?number,
-
-    /**
-     * Style to be applied to the rendered text.
-     */
-    textStyle: ?Object,
 
     /**
      * The redux {@code dispatch} function.
@@ -43,7 +39,7 @@ type State = {
  * ConferenceTimer react component.
  *
  * @class ConferenceTimer
- * @augments Component
+ * @extends Component
  */
 class ConferenceTimer extends Component<Props, State> {
 
@@ -94,13 +90,13 @@ class ConferenceTimer extends Component<Props, State> {
      */
     render() {
         const { timerValue } = this.state;
-        const { _startTimestamp, textStyle } = this.props;
+        const { _startTimestamp } = this.props;
 
         if (!_startTimestamp) {
             return null;
         }
 
-        return renderConferenceTimer(timerValue, textStyle);
+        return renderConferenceTimer(timerValue);
     }
 
     /**
@@ -112,6 +108,7 @@ class ConferenceTimer extends Component<Props, State> {
      * @returns {void}
      */
     _setStateFromUTC(refValueUTC, currentValueUTC) {
+
         if (!refValueUTC || !currentValueUTC) {
             return;
         }
@@ -121,8 +118,13 @@ class ConferenceTimer extends Component<Props, State> {
         }
 
         const timerMsValue = currentValueUTC - refValueUTC;
-
+        
         const localizedTime = getLocalizedDurationFormatter(timerMsValue);
+        const minutes = localizedTime.split(':')[0];
+
+        if (getAPIID() === 'TEST' && parseInt(minutes) >= 10) {
+            window.location.href = '/';
+        }
 
         this.setState({
             timerValue: localizedTime
@@ -136,10 +138,10 @@ class ConferenceTimer extends Component<Props, State> {
      */
     _startTimer() {
         if (!this._interval) {
-            this._setStateFromUTC(this.props._startTimestamp, new Date().getTime());
+            this._setStateFromUTC(this.props._startTimestamp, (new Date()).getTime());
 
             this._interval = setInterval(() => {
-                this._setStateFromUTC(this.props._startTimestamp, new Date().getTime());
+                this._setStateFromUTC(this.props._startTimestamp, (new Date()).getTime());
             }, 1000);
         }
     }

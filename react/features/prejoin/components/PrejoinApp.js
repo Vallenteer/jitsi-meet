@@ -5,28 +5,35 @@ import React from 'react';
 import { batch } from 'react-redux';
 
 import { BaseApp } from '../../../features/base/app';
-import { getConferenceOptions } from '../../base/conference/functions';
 import { setConfig } from '../../base/config';
-import { DialogContainer } from '../../base/dialog';
 import { createPrejoinTracks } from '../../base/tracks';
-import GlobalStyles from '../../base/ui/components/GlobalStyles';
-import JitsiThemeProvider from '../../base/ui/components/JitsiThemeProvider';
+import { getConferenceOptions } from '../../conference/functions';
 import { initPrejoin, makePrecallTest } from '../actions';
 
-import PrejoinThirdParty from './PrejoinThirdParty';
+import Prejoin from './Prejoin';
 
 type Props = {
 
     /**
-     * Indicates the style type that needs to be applied.
+     * Indicates whether the avatar should be shown when video is off
      */
-    styleType: string
-}
+    showAvatar: boolean,
+
+    /**
+     * Flag signaling the visibility of join label, input and buttons
+     */
+    showJoinActions: boolean,
+
+    /**
+     * Flag signaling the visibility of the skip prejoin toggle
+     */
+    showSkipPrejoin: boolean,
+};
 
 /**
  * Wrapper application for prejoin.
  *
- * @augments BaseApp
+ * @extends BaseApp
  */
 export default class PrejoinApp extends BaseApp<Props> {
     _init: Promise<*>;
@@ -42,21 +49,21 @@ export default class PrejoinApp extends BaseApp<Props> {
         this._init.then(async () => {
             const { store } = this.state;
             const { dispatch } = store;
-            const { styleType } = this.props;
+            const { showAvatar, showJoinActions, showSkipPrejoin } = this.props;
 
             super._navigate({
-                component: PrejoinThirdParty,
+                component: Prejoin,
                 props: {
-                    className: styleType
+                    showAvatar,
+                    showJoinActions,
+                    showSkipPrejoin
                 }
             });
 
             const { startWithAudioMuted, startWithVideoMuted } = store.getState()['features/base/settings'];
 
             dispatch(setConfig({
-                prejoinConfig: {
-                    enabled: true
-                },
+                prejoinPageEnabled: true,
                 startWithAudioMuted,
                 startWithVideoMuted
             }));
@@ -80,12 +87,9 @@ export default class PrejoinApp extends BaseApp<Props> {
      */
     _createMainElement(component, props) {
         return (
-            <JitsiThemeProvider>
-                <AtlasKitThemeProvider mode = 'dark'>
-                    <GlobalStyles />
-                    { super._createMainElement(component, props) }
-                </AtlasKitThemeProvider>
-            </JitsiThemeProvider>
+            <AtlasKitThemeProvider mode = 'dark'>
+                { super._createMainElement(component, props) }
+            </AtlasKitThemeProvider>
         );
     }
 
@@ -95,12 +99,6 @@ export default class PrejoinApp extends BaseApp<Props> {
      * @returns {React$Element}
      */
     _renderDialogContainer() {
-        return (
-            <JitsiThemeProvider>
-                <AtlasKitThemeProvider mode = 'dark'>
-                    <DialogContainer />
-                </AtlasKitThemeProvider>
-            </JitsiThemeProvider>
-        );
+        return null;
     }
 }

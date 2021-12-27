@@ -3,7 +3,7 @@
 import { Component } from 'react';
 
 /**
- * {@code AbstractGoogleSignInButton} Component's property types.
+ * {@code AbstractGoogleSignInButton} component's property types.
  */
 type Props = {
 

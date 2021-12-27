@@ -5,8 +5,7 @@ import React from 'react';
 
 import { translate } from '../../../base/i18n';
 import { IconWarning } from '../../../base/icons';
-import { Label } from '../../../base/label';
-import { COLORS } from '../../../base/label/constants';
+import { CircularLabel } from '../../../base/label';
 import { connect } from '../../../base/redux';
 import AbstractInsecureRoomNameLabel, { _mapStateToProps } from '../AbstractInsecureRoomNameLabel';
 
@@ -15,7 +14,7 @@ import AbstractInsecureRoomNameLabel, { _mapStateToProps } from '../AbstractInse
  */
 class InsecureRoomNameLabel extends AbstractInsecureRoomNameLabel {
     /**
-     * Renders the platform dependent content.
+     * Renders the platform dependant content.
      *
      * @inheritdoc
      */
@@ -23,9 +22,9 @@ class InsecureRoomNameLabel extends AbstractInsecureRoomNameLabel {
         return (
             <Tooltip
                 content = { this.props.t('security.insecureRoomNameWarning') }
-                position = 'bottom'>
-                <Label
-                    color = { COLORS.red }
+                position = 'left'>
+                <CircularLabel
+                    className = 'insecure'
                     icon = { IconWarning } />
             </Tooltip>
         );

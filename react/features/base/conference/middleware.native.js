@@ -13,7 +13,7 @@ import './middleware.any';
 MiddlewareRegistry.register(store => next => action => {
     switch (action.type) {
     case TOGGLE_SCREENSHARING: {
-        _toggleScreenSharing(action.enabled, store);
+        _toggleScreenSharing(store);
         break;
     }
     }
@@ -25,23 +25,19 @@ MiddlewareRegistry.register(store => next => action => {
  * Toggles screen sharing.
  *
  * @private
- * @param {boolean} enabled - The state to toggle screen sharing to.
  * @param {Store} store - The redux.
  * @returns {void}
  */
-function _toggleScreenSharing(enabled, store) {
+function _toggleScreenSharing(store) {
     const { dispatch, getState } = store;
     const state = getState();
 
-    if (enabled) {
-        const isSharing = isLocalVideoTrackDesktop(state);
+    const isSharing = isLocalVideoTrackDesktop(state);
 
-        if (!isSharing) {
-            _startScreenSharing(dispatch, state);
-        }
-    } else {
+    if (isSharing) {
         dispatch(destroyLocalDesktopTrackIfExists());
-        setPictureInPictureDisabled(false);
+    } else {
+        _startScreenSharing(dispatch, state);
     }
 }
 

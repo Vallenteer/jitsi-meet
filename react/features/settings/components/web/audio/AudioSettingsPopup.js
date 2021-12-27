@@ -1,6 +1,5 @@
 // @flow
 
-import InlineDialog from '@atlaskit/inline-dialog';
 import React from 'react';
 
 import {
@@ -10,11 +9,11 @@ import {
     setAudioOutputDevice as setAudioOutputDeviceAction
 } from '../../../../base/devices';
 import { connect } from '../../../../base/redux';
-import { SMALL_MOBILE_WIDTH } from '../../../../base/responsive-ui/constants';
 import {
     getCurrentMicDeviceId,
     getCurrentOutputDeviceId
 } from '../../../../base/settings';
+import InlineDialog from '../../../../videoapi/components/web/InlineDialog';
 import { toggleAudioSettings } from '../../../actions';
 import { getAudioSettingsVisibility } from '../../../functions';
 
@@ -37,11 +36,6 @@ type Props = AudioSettingsContentProps & {
     * Callback executed when the popup closes.
     */
     onClose: Function,
-
-    /**
-     * The popup placement enum value.
-     */
-    popupPlacement: string
 }
 
 /**
@@ -58,8 +52,7 @@ function AudioSettingsPopup({
     setAudioInputDevice,
     setAudioOutputDevice,
     onClose,
-    outputDevices,
-    popupPlacement
+    outputDevices
 }: Props) {
     return (
         <div className = 'audio-preview'>
@@ -73,7 +66,7 @@ function AudioSettingsPopup({
                     setAudioOutputDevice = { setAudioOutputDevice } /> }
                 isOpen = { isOpen }
                 onClose = { onClose }
-                placement = { popupPlacement }>
+                position = 'top left'>
                 {children}
             </InlineDialog>
         </div>
@@ -87,10 +80,7 @@ function AudioSettingsPopup({
  * @returns {Object}
  */
 function mapStateToProps(state) {
-    const { clientWidth } = state['features/base/responsive-ui'];
-
     return {
-        popupPlacement: clientWidth <= SMALL_MOBILE_WIDTH ? 'auto' : 'top-start',
         currentMicDeviceId: getCurrentMicDeviceId(state),
         currentOutputDeviceId: getCurrentOutputDeviceId(state),
         isOpen: getAudioSettingsVisibility(state),

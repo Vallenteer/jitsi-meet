@@ -20,17 +20,8 @@ export default {
 
     detect() {
         const { LocaleDetector } = NativeModules;
-        const parts = LocaleDetector.locale.replace(/_/, '-').split('-');
-        const [ lang, regionOrScript, region ] = parts;
-        let locale;
-
-        if (parts.length >= 3) {
-            locale = `${lang}${region}`;
-        } else if (parts.length === 2) {
-            locale = `${lang}${regionOrScript}`;
-        } else {
-            locale = lang;
-        }
+        const [ lang, region ] = LocaleDetector.locale.replace(/_/, '-').split('-');
+        const locale = `${lang}${region}`;
 
         if (LANGUAGES.includes(locale)) {
             return locale;

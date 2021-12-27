@@ -11,7 +11,6 @@ import {
     sendAnalytics
 } from '../../analytics';
 import { Dialog } from '../../base/dialog';
-import { isMobileBrowser } from '../../base/environment/utils';
 import { translate } from '../../base/i18n';
 import { connect } from '../../base/redux';
 import { cancelFeedback, submitFeedback } from '../actions';
@@ -25,6 +24,8 @@ const scoreAnimationClass
 /**
  * The scores to display for selecting. The score is the index in the array and
  * the value of the index is a translation key used for display in the dialog.
+ *
+ * @types {string[]}
  */
 const SCORES = [
     'feedback.veryBad',
@@ -33,10 +34,6 @@ const SCORES = [
     'feedback.good',
     'feedback.veryGood'
 ];
-
-type Scrollable = {
-    scroll: Function
-}
 
 /**
  * The type of the React {@code Component} props of {@link FeedbackDialog}.
@@ -107,7 +104,7 @@ type State = {
  * conference quality, write a message describing the experience, and submit
  * the feedback.
  *
- * @augments Component
+ * @extends Component
  */
 class FeedbackDialog extends Component<Props, State> {
     /**
@@ -157,12 +154,6 @@ class FeedbackDialog extends Component<Props, State> {
         this._scoreClickConfigurations = SCORES.map((textKey, index) => {
             return {
                 _onClick: () => this._onScoreSelect(index),
-                _onKeyPres: e => {
-                    if (e.key === ' ' || e.key === 'Enter') {
-                        e.preventDefault();
-                        this._onScoreSelect(index);
-                    }
-                },
                 _onMouseOver: () => this._onScoreMouseOver(index)
             };
         });
@@ -173,12 +164,6 @@ class FeedbackDialog extends Component<Props, State> {
         this._onScoreContainerMouseLeave
             = this._onScoreContainerMouseLeave.bind(this);
         this._onSubmit = this._onSubmit.bind(this);
-
-        // On some mobile browsers opening Feedback dialog scrolls down the whole content because of the keyboard.
-        // By scrolling to the top we prevent hiding the feedback stars so the user knows those exist.
-        this._onScrollTop = (node: ?Scrollable) => {
-            node && node.scroll && node.scroll(0, 0);
-        };
     }
 
     /**
@@ -215,8 +200,6 @@ class FeedbackDialog extends Component<Props, State> {
         const scoreToDisplayAsSelected
             = mousedOverScore > -1 ? mousedOverScore : score;
 
-        const { t } = this.props;
-
         const scoreIcons = this._scoreClickConfigurations.map(
             (config, index) => {
                 const isFilled = index <= scoreToDisplayAsSelected;
@@ -225,17 +208,11 @@ class FeedbackDialog extends Component<Props, State> {
                     = `star-btn ${scoreAnimationClass} ${activeClass}`;
 
                 return (
-                    <span
-                        aria-label = { t(SCORES[index]) }
+                    <a
                         className = { className }
                         key = { index }
                         onClick = { config._onClick }
-                        onKeyPress = { config._onKeyPres }
-                        role = 'button'
-                        tabIndex = { 0 }
-                        { ...(isMobileBrowser() ? {} : {
-                            onMouseOver: config._onMouseOver
-                        }) }>
+                        onMouseOver = { config._onMouseOver }>
                         { isFilled
                             ? <StarFilledIcon
                                 label = 'star-filled'
@@ -243,23 +220,21 @@ class FeedbackDialog extends Component<Props, State> {
                             : <StarIcon
                                 label = 'star'
                                 size = 'xlarge' /> }
-                    </span>
+                    </a>
                 );
             });
 
+        const { t } = this.props;
 
         return (
             <Dialog
                 okKey = 'dialog.Submit'
                 onCancel = { this._onCancel }
-                onDialogRef = { this._onScrollTop }
                 onSubmit = { this._onSubmit }
                 titleKey = 'feedback.rateExperience'>
                 <div className = 'feedback-dialog'>
                     <div className = 'rating'>
-                        <div
-                            aria-label = { this.props.t('feedback.star') }
-                            className = 'star-label' >
+                        <div className = 'star-label'>
                             <p id = 'starLabel'>
                                 { t(SCORES[scoreToDisplayAsSelected]) }
                             </p>
@@ -373,8 +348,6 @@ class FeedbackDialog extends Component<Props, State> {
 
         return true;
     }
-
-    _onScrollTop: (node: ?Scrollable) => void;
 }
 
 /**

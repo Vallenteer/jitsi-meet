@@ -5,7 +5,7 @@ import type { Dispatch } from 'redux';
 
 import { conferenceLeft, conferenceWillLeave } from '../conference/actions';
 import { getCurrentConference } from '../conference/functions';
-import JitsiMeetJS, { JitsiConnectionEvents } from '../lib-jitsi-meet';
+import LibVideoAPI, { JitsiConnectionEvents } from '../lib-jitsi-meet';
 import {
     getBackendSafeRoomName,
     parseURIString
@@ -69,7 +69,7 @@ export type ConnectionFailedError = {
 };
 
 /**
- * Opens new connection.
+ * Opens new connection. xxx
  *
  * @param {string} [id] - The XMPP user's ID (e.g. {@code user@server.com}).
  * @param {string} [password] - The XMPP user's password.
@@ -81,7 +81,7 @@ export function connect(id: ?string, password: ?string) {
         const options = _constructOptions(state);
         const { locationURL } = state['features/base/connection'];
         const { jwt } = state['features/base/jwt'];
-        const connection = new JitsiMeetJS.JitsiConnection(options.appId, jwt, options);
+        const connection = new LibVideoAPI.VideoAPIConnection(options.appId, jwt, options);
 
         connection[JITSI_CONNECTION_URL_KEY] = locationURL;
 
@@ -275,17 +275,10 @@ function _constructOptions(state) {
     // redux store.
     const options = _.cloneDeep(state['features/base/config']);
 
-    let { bosh, websocket } = options;
-
-    // TESTING: Only enable WebSocket for some percentage of users.
-    if (websocket) {
-        if ((Math.random() * 100) >= (options?.testing?.mobileXmppWsThreshold ?? 0)) {
-            websocket = undefined;
-        }
-    }
-
     // Normalize the BOSH URL.
-    if (bosh && !websocket) {
+    let { bosh } = options;
+
+    if (bosh) {
         const { locationURL } = state['features/base/connection'];
 
         if (bosh.startsWith('//')) {
@@ -302,24 +295,14 @@ function _constructOptions(state) {
             // eslint-disable-next-line max-len
             bosh = `${protocol}//${host}${contextRoot || '/'}${bosh.substr(1)}`;
         }
-    }
 
-    // WebSocket is preferred over BOSH.
-    const serviceUrl = websocket || bosh;
+        // Append room to the URL's search.
+        const { room } = state['features/base/conference'];
 
-    logger.log(`Using service URL ${serviceUrl}`);
+        room && (bosh += `?room=${getBackendSafeRoomName(room)}`);
 
-    // Append room to the URL's search.
-    const { room } = state['features/base/conference'];
-
-    if (serviceUrl && room) {
-        const roomName = getBackendSafeRoomName(room);
-
-        options.serviceUrl = `${serviceUrl}?room=${roomName}`;
-
-        if (options.websocketKeepAliveUrl) {
-            options.websocketKeepAliveUrl += `?room=${roomName}`;
-        }
+        // FIXME Remove deprecated 'bosh' option assignment at some point.
+        options.serviceUrl = options.bosh = bosh;
     }
 
     return options;
@@ -384,7 +367,7 @@ export function disconnect() {
 }
 
 /**
- * Sets the location URL of the application, connection, conference, etc.
+ * Sets the location URL of the application, connecton, conference, etc.
  *
  * @param {URL} [locationURL] - The location URL of the application,
  * connection, conference, etc.

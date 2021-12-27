@@ -28,12 +28,10 @@ type Props = {
 function CopyMeetingLinkSection({ t, url }: Props) {
     return (
         <>
-            <label htmlFor = { 'copy-button-id' }>{t('addPeople.shareLink')}</label>
+            <span>{t('addPeople.shareLink')}</span>
             <CopyButton
-                aria-label = { t('addPeople.copyLink') }
                 className = 'invite-more-dialog-conference-url'
                 displayedText = { getDecodedURI(url) }
-                id = 'copy-button-id'
                 textOnCopySuccess = { t('addPeople.linkCopied') }
                 textOnHover = { t('addPeople.copyLink') }
                 textToCopy = { url } />

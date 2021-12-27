@@ -30,7 +30,7 @@ type Props = {
 /**
  * Represents the toolbar in the Always On Top window.
  *
- * @augments Component
+ * @extends Component
  */
 export default class Toolbar extends Component<Props> {
     /**
@@ -48,12 +48,12 @@ export default class Toolbar extends Component<Props> {
 
         return (
             <div
-                className = { `toolbox-content-items always-on-top-toolbox ${className}` }
+                className = { `always-on-top-toolbox ${className}` }
                 onMouseOut = { onMouseOut }
                 onMouseOver = { onMouseOver }>
                 <AudioMuteButton />
+                <HangupButton />
                 <VideoMuteButton />
-                <HangupButton customClass = 'hangup-button' />
             </div>
         );
     }

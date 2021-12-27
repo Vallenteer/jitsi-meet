@@ -1,9 +1,9 @@
 /* @flow */
 
+import Tooltip from '../../../videoapi/components/web/Tooltip';
 import React from 'react';
 
-import { Icon } from '../../../base/icons';
-import { Tooltip } from '../../../base/tooltip';
+import { Icon, IconImage } from '../../../base/icons';
 import AbstractToolbarButton from '../AbstractToolbarButton';
 import type { Props as AbstractToolbarButtonProps }
     from '../AbstractToolbarButton';
@@ -11,7 +11,7 @@ import type { Props as AbstractToolbarButtonProps }
 /**
  * The type of the React {@code Component} props of {@link ToolbarButton}.
  */
-export type Props = AbstractToolbarButtonProps & {
+type Props = AbstractToolbarButtonProps & {
 
     /**
      * The text to display in the tooltip.
@@ -22,18 +22,13 @@ export type Props = AbstractToolbarButtonProps & {
      * From which direction the tooltip should appear, relative to the
      * button.
      */
-    tooltipPosition: string,
-
-    /**
-     * KeyDown handler.
-     */
-    onKeyDown?: Function
+    tooltipPosition: string
 };
 
 /**
  * Represents a button in the toolbar.
  *
- * @augments AbstractToolbarButton
+ * @extends AbstractToolbarButton
  */
 class ToolbarButton extends AbstractToolbarButton<Props> {
     /**
@@ -53,39 +48,31 @@ class ToolbarButton extends AbstractToolbarButton<Props> {
     constructor(props: Props) {
         super(props);
 
-        this._onKeyPress = this._onKeyPress.bind(this);
-        this._onClick = this._onClick.bind(this);
+        this._onKeyDown = this._onKeyDown.bind(this);
     }
 
-    _onKeyPress: (Object) => void;
+    _onKeyDown: (Object) => void;
 
     /**
-     * Handles 'Enter' and Space key on the button to trigger onClick for accessibility.
+     * Handles 'Enter' key on the button to trigger onClick for accessibility.
+     * We should be handling Space onKeyUp but it conflicts with PTT.
      *
      * @param {Object} event - The key event.
      * @private
      * @returns {void}
      */
-    _onKeyPress(event) {
-        if (event.key === 'Enter' || event.key === ' ') {
+    _onKeyDown(event) {
+        // If the event coming to the dialog has been subject to preventDefault
+        // we don't handle it here.
+        if (event.defaultPrevented) {
+            return;
+        }
+
+        if (event.key === 'Enter') {
             event.preventDefault();
+            event.stopPropagation();
             this.props.onClick();
         }
-    }
-    _onClick: (Object) => void;
-
-    /**
-     * Handles button click.
-     *
-     * @param {Object} e - The key event.
-     * @private
-     * @returns {void}
-     */
-    _onClick(e) {
-        this.props.onClick(e);
-
-        // blur after click to release focus from button to allow PTT.
-        e && e.currentTarget && e.currentTarget.blur();
     }
 
     /**
@@ -99,21 +86,28 @@ class ToolbarButton extends AbstractToolbarButton<Props> {
     _renderButton(children) {
         return (
             <div
-                aria-label = { this.props.accessibilityLabel }
-                aria-pressed = { this.props.toggled }
-                className = 'toolbox-button'
-                onClick = { this._onClick }
-                onKeyDown = { this.props.onKeyDown }
-                onKeyPress = { this._onKeyPress }
-                role = 'button'
-                tabIndex = { 0 }>
-                { this.props.tooltip
-                    ? <Tooltip
-                        content = { this.props.tooltip }
-                        position = { this.props.tooltipPosition }>
-                        { children }
-                    </Tooltip>
-                    : children }
+                style = {{
+                    display: "flex",
+                    flexDirection: 'column',
+                    textAlign: 'center',
+                    alignItems: 'center'}}>
+                <div
+                    aria-label = { this.props.accessibilityLabel }
+                    aria-pressed = { this.props.toggled }
+                    className = {`toolbox-button ${this.props.className || ''}`}
+                    onClick = { this.props.onClick }
+                    onKeyDown = { this._onKeyDown }
+                    role = 'button'
+                    tabIndex = { 0 }>
+                    { this.props.tooltip
+                        ? <Tooltip
+                            content = { this.props.tooltip }
+                            position = { this.props.tooltipPosition }>
+                            { children }
+                        </Tooltip>
+                        : children }
+                </div>
+                <div>{this.props.title}</div>
             </div>
         );
     }
@@ -125,8 +119,8 @@ class ToolbarButton extends AbstractToolbarButton<Props> {
      */
     _renderIcon() {
         return (
-            <div className = { `toolbox-icon ${this.props.toggled ? 'toggled' : ''}` }>
-                <Icon src = { this.props.icon } />
+            <div className = { `${this.props.empty ? 'toolbox-icon-empty' : 'toolbox-icon'} ${this.props.classNameIcon} ${this.props.toggled ? 'toggled' : ''}` }>
+                { this.props.iconImage ? <IconImage src = { this.props.iconImage } /> : <Icon src = { this.props.icon } /> }
             </div>
         );
     }

@@ -23,9 +23,10 @@ type Props = {
 export default function ScreenShareIndicator(props: Props) {
     return (
         <BaseIndicator
+            className = 'screenShare toolbar-icon'
             icon = { IconShareDesktop }
             iconId = 'share-desktop'
-            iconSize = { 15 }
+            iconSize = { 13 }
             tooltipKey = 'videothumbnail.videomute'
             tooltipPosition = { props.tooltipPosition } />
     );

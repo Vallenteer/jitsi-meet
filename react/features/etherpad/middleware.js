@@ -2,10 +2,12 @@
 
 import UIEvents from '../../../service/UI/UIEvents';
 import { getCurrentConference } from '../base/conference';
+import { setActiveModalId } from '../base/modal';
 import { MiddlewareRegistry, StateListenerRegistry } from '../base/redux';
 
 import { TOGGLE_DOCUMENT_EDITING } from './actionTypes';
-import { setDocumentUrl } from './actions';
+import { setDocumentEditingState, setDocumentUrl } from './actions';
+import { SHARE_DOCUMENT_VIEW_ID } from './constants';
 
 declare var APP: Object;
 
@@ -22,7 +24,17 @@ const ETHERPAD_COMMAND = 'etherpad';
 MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
     switch (action.type) {
     case TOGGLE_DOCUMENT_EDITING: {
-        if (typeof APP !== 'undefined') {
+        if (typeof APP === 'undefined') {
+            const editing = !getState()['features/etherpad'].editing;
+
+            dispatch(setDocumentEditingState(editing));
+
+            if (editing) {
+                dispatch(setActiveModalId(SHARE_DOCUMENT_VIEW_ID));
+            } else if (getState()['features/base/modal'].activeModalId === SHARE_DOCUMENT_VIEW_ID) {
+                dispatch(setActiveModalId(undefined));
+            }
+        } else {
             APP.UI.emitEvent(UIEvents.ETHERPAD_CLICKED);
         }
         break;
@@ -34,7 +46,7 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
 
 /**
  * Set up state change listener to perform maintenance tasks when the conference
- * is left or failed, e.g. Clear messages or close the chat modal if it's left
+ * is left or failed, e.g. clear messages or close the chat modal if it's left
  * open.
  */
 StateListenerRegistry.register(

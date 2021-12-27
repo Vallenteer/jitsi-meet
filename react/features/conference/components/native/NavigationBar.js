@@ -1,19 +1,18 @@
 // @flow
 
-import React from 'react';
-import { Text, View } from 'react-native';
+import React, { Component } from 'react';
+import { SafeAreaView, Text, View } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 
-import { getConferenceName, getConferenceTimestamp } from '../../../base/conference/functions';
+import { getConferenceName } from '../../../base/conference';
 import { getFeatureFlag, CONFERENCE_TIMER_ENABLED, MEETING_NAME_ENABLED } from '../../../base/flags';
 import { connect } from '../../../base/redux';
-import InviteButton from '../../../invite/components/add-people-dialog/native/InviteButton';
 import { PictureInPictureButton } from '../../../mobile/picture-in-picture';
 import { isToolboxVisible } from '../../../toolbox/functions.native';
+import { getRoom } from '../../../videoapi/api';
 import ConferenceTimer from '../ConferenceTimer';
 
-import Labels from './Labels';
-import styles from './styles';
-
+import styles, { NAVBAR_GRADIENT_COLORS } from './styles';
 
 type Props = {
 
@@ -41,49 +40,54 @@ type Props = {
 /**
  * Implements a navigation bar component that is rendered on top of the
  * conference screen.
- *
- * @param {Props} props - The React props passed to this component.
- * @returns {React.Node}
  */
-const NavigationBar = (props: Props) => {
-    if (!props._visible) {
-        return null;
+class NavigationBar extends Component<Props> {
+    /**
+     * Implements {@Component#render}.
+     *
+     * @inheritdoc
+     */
+    render() {
+        if (!this.props._visible) {
+            return null;
+        }
+
+        return [
+            <LinearGradient
+                colors = { NAVBAR_GRADIENT_COLORS }
+                key = { 1 }
+                pointerEvents = 'none'
+                style = { styles.gradient }>
+                <SafeAreaView>
+                    <View style = { styles.gradientStretchTop } />
+                </SafeAreaView>
+            </LinearGradient>,
+            <View
+                key = { 2 }
+                pointerEvents = 'box-none'
+                style = { styles.navBarWrapper }>
+                <PictureInPictureButton
+                    styles = { styles.navBarButton } />
+                <View
+                    pointerEvents = 'box-none'
+                    style = { styles.roomNameWrapper }>
+                    {
+                        this.props._meetingNameEnabled
+                        && <Text
+                            numberOfLines = { 1 }
+                            style = { styles.roomName }>
+                            { getRoom() }
+                        </Text>
+                    }
+                    {
+                        this.props._conferenceTimerEnabled && <ConferenceTimer />
+                    }
+                </View>
+            </View>
+        ];
     }
 
-    return (
-        <View
-            pointerEvents = 'box-none'
-            style = { styles.navBarWrapper }>
-            <View style = { styles.pipButtonContainer }>
-                <PictureInPictureButton styles = { styles.pipButton } />
-            </View>
-            <View
-                pointerEvents = 'box-none'
-                style = { styles.roomNameWrapper }>
-                {
-                    props._meetingNameEnabled
-                        && <View style = { styles.roomNameView }>
-                            <Text
-                                numberOfLines = { 1 }
-                                style = { styles.roomName }>
-                                { props._meetingName }
-                            </Text>
-                        </View>
-                }
-                {
-                    props._conferenceTimerEnabled
-                            && <View style = { styles.roomTimerView }>
-                                <ConferenceTimer textStyle = { styles.roomTimer } />
-                            </View>
-                }
-                <Labels />
-            </View>
-            <View style = { styles.inviteButtonContainer }>
-                <InviteButton styles = { styles.inviteButton } />
-            </View>
-        </View>
-    );
-};
+}
 
 /**
  * Maps part of the Redux store to the props of this component.
@@ -92,15 +96,10 @@ const NavigationBar = (props: Props) => {
  * @returns {Props}
  */
 function _mapStateToProps(state) {
-    const { hideConferenceTimer, hideConferenceSubject } = state['features/base/config'];
-    const startTimestamp = getConferenceTimestamp(state);
-
     return {
-        _conferenceTimerEnabled:
-            Boolean(getFeatureFlag(state, CONFERENCE_TIMER_ENABLED, true) && !hideConferenceTimer && startTimestamp),
+        _conferenceTimerEnabled: getFeatureFlag(state, CONFERENCE_TIMER_ENABLED, true),
         _meetingName: getConferenceName(state),
-        _meetingNameEnabled:
-            getFeatureFlag(state, MEETING_NAME_ENABLED, true) && !hideConferenceSubject,
+        _meetingNameEnabled: getFeatureFlag(state, MEETING_NAME_ENABLED, true),
         _visible: isToolboxVisible(state)
     };
 }

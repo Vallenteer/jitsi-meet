@@ -1,52 +1,39 @@
 // @flow
 
-import { isMobileBrowser } from '../base/environment/utils';
-import { getParticipantCountWithFake } from '../base/participants';
+import Filmstrip from '../../../modules/UI/videolayout/Filmstrip';
+import VideoLayout from '../../../modules/UI/videolayout/VideoLayout';
 import { StateListenerRegistry, equals } from '../base/redux';
-import { clientResized } from '../base/responsive-ui';
-import { shouldHideSelfView } from '../base/settings';
-import { setFilmstripVisible } from '../filmstrip/actions';
-import { getParticipantsPaneOpen } from '../participants-pane/functions';
-import { setOverflowDrawer } from '../toolbox/actions.web';
 import { getCurrentLayout, getTileViewGridDimensions, shouldDisplayTileView, LAYOUTS } from '../video-layout';
 
-import {
-    setHorizontalViewDimensions,
-    setTileViewDimensions,
-    setVerticalViewDimensions
-} from './actions';
-import {
-    ASPECT_RATIO_BREAKPOINT,
-    DISPLAY_DRAWER_THRESHOLD,
-    SINGLE_COLUMN_BREAKPOINT,
-    TWO_COLUMN_BREAKPOINT
-} from './constants';
-import './subscriber.any';
-
+import { setHorizontalViewDimensions, setTileViewDimensions } from './actions.web';
 
 /**
  * Listens for changes in the number of participants to calculate the dimensions of the tile view grid and the tiles.
  */
 StateListenerRegistry.register(
-    /* selector */ state => {
-        return {
-            numberOfParticipants: getParticipantCountWithFake(state),
-            disableSelfView: shouldHideSelfView(state)
-        };
-    },
-    /* listener */ (currentState, store) => {
+    /* selector */ state => state['features/base/participants'].length,
+    /* listener */ (numberOfParticipants, store) => {
         const state = store.getState();
 
         if (shouldDisplayTileView(state)) {
             const gridDimensions = getTileViewGridDimensions(state);
             const oldGridDimensions = state['features/filmstrip'].tileViewDimensions.gridDimensions;
+            const { clientHeight, clientWidth } = state['features/base/responsive-ui'];
+            const { isOpen } = state['features/chat'];
 
             if (!equals(gridDimensions, oldGridDimensions)) {
-                store.dispatch(setTileViewDimensions(gridDimensions));
+                store.dispatch(
+                    setTileViewDimensions(
+                        gridDimensions,
+                        {
+                            clientHeight,
+                            clientWidth
+                        },
+                        isOpen
+                    )
+                );
             }
         }
-    }, {
-        deepEquals: true
     });
 
 /**
@@ -58,115 +45,89 @@ StateListenerRegistry.register(
         const state = store.getState();
 
         switch (layout) {
-        case LAYOUTS.TILE_VIEW:
-            store.dispatch(setTileViewDimensions(getTileViewGridDimensions(state)));
+        case LAYOUTS.TILE_VIEW: {
+            const { clientHeight, clientWidth } = state['features/base/responsive-ui'];
+            const { isOpen } = state['features/chat'];
+
+            store.dispatch(
+                setTileViewDimensions(
+                    getTileViewGridDimensions(state),
+                    {
+                        clientHeight,
+                        clientWidth
+                    },
+                    isOpen
+                )
+            );
             break;
+        }
         case LAYOUTS.HORIZONTAL_FILMSTRIP_VIEW:
-            store.dispatch(setHorizontalViewDimensions());
+            store.dispatch(setHorizontalViewDimensions(state['features/base/responsive-ui'].clientHeight));
             break;
         case LAYOUTS.VERTICAL_FILMSTRIP_VIEW:
-            store.dispatch(setVerticalViewDimensions());
+            // Once the thumbnails are reactified this should be moved there too.
+            Filmstrip.resizeThumbnailsForVerticalView();
             break;
         }
     });
 
 /**
- * Listens for changes in the chat state to recompute available width.
+ * Handles on stage participant updates.
  */
 StateListenerRegistry.register(
-    /* selector */ state => state['features/chat'].isOpen,
-    /* listener */ (isChatOpen, store) => {
-        const { innerWidth, innerHeight } = window;
+    /* selector */ state => state['features/large-video'].participantId,
+    /* listener */ (participantId, store, oldParticipantId) => {
+        const newThumbnail = VideoLayout.getSmallVideo(participantId);
+        const oldThumbnail = VideoLayout.getSmallVideo(oldParticipantId);
 
-        if (isChatOpen) {
-            // $FlowFixMe
-            document.body.classList.add('shift-right');
-        } else {
-            // $FlowFixMe
-            document.body.classList.remove('shift-right');
+        if (newThumbnail) {
+            newThumbnail.updateView();
         }
 
-        store.dispatch(clientResized(innerWidth, innerHeight));
-    });
-
-/**
- * Listens for changes in the participant pane state to calculate the
- * dimensions of the tile view grid and the tiles.
- */
-StateListenerRegistry.register(
-    /* selector */ getParticipantsPaneOpen,
-    /* listener */ (isOpen, store) => {
-        const { innerWidth, innerHeight } = window;
-
-        store.dispatch(clientResized(innerWidth, innerHeight));
-    });
-
-
-/**
- * Listens for changes in the client width to determine whether the overflow menu(s) should be displayed as drawers.
- */
-StateListenerRegistry.register(
-    /* selector */ state => state['features/base/responsive-ui'].clientWidth < DISPLAY_DRAWER_THRESHOLD,
-    /* listener */ (widthBelowThreshold, store) => {
-        if (isMobileBrowser()) {
-            store.dispatch(setOverflowDrawer(widthBelowThreshold));
+        if (oldThumbnail) {
+            oldThumbnail.updateView();
         }
-    });
+    }
+);
 
-/**
- * Gracefully hide/show the filmstrip when going past threshold.
- */
-StateListenerRegistry.register(
-    /* selector */ state => state['features/base/responsive-ui'].clientWidth < ASPECT_RATIO_BREAKPOINT,
-    /* listener */ (widthBelowThreshold, store) => {
-        const state = store.getState();
-        const { disableFilmstripAutohiding } = state['features/base/config'];
+const listener = (isOpen, store) => {
+    const state = store.getState();
 
-        if (!disableFilmstripAutohiding) {
-            store.dispatch(setFilmstripVisible(!widthBelowThreshold));
-        }
-    });
+    if (isOpen) {
+        // $FlowFixMe
+        document.body.classList.add('shift-left');
+    } else {
+        // $FlowFixMe
+        document.body.classList.remove('shift-left');
+    }
 
-/**
- * Symbol mapping used for the tile view responsiveness computation.
- */
-const responsiveColumnMapping = {
-    multipleColumns: Symbol('multipleColumns'),
-    singleColumn: Symbol('singleColumn'),
-    twoColumns: Symbol('twoColumns'),
-    twoParticipantsSingleColumn: Symbol('twoParticipantsSingleColumn')
+    if (shouldDisplayTileView(state)) {
+        const gridDimensions = getTileViewGridDimensions(state);
+        const { clientHeight, clientWidth } = state['features/base/responsive-ui'];
+
+        store.dispatch(
+            setTileViewDimensions(
+                gridDimensions,
+                {
+                    clientHeight,
+                    clientWidth
+                },
+                isOpen
+            )
+        );
+    }
 };
 
 /**
- * Listens for changes in the screen size to recompute
- * the dimensions of the tile view grid and the tiles for responsiveness.
+ * Listens for changes in the chat state to calculate the dimensions of the tile view grid and the tiles.
  */
 StateListenerRegistry.register(
-    /* selector */ state => {
-        const { clientWidth } = state['features/base/responsive-ui'];
+    /* selector */ state => state['features/videoapi/modal-dialog'].isOpen,
+    /* listener */ listener);
 
-        if (clientWidth < TWO_COLUMN_BREAKPOINT && clientWidth >= ASPECT_RATIO_BREAKPOINT) {
-            // Forcing the recomputation of tiles when screen switches in or out of
-            // the (TWO_COLUMN_BREAKPOINT, ASPECT_RATIO_BREAKPOINT] interval.
-            return responsiveColumnMapping.twoColumns;
-        } else if (clientWidth < ASPECT_RATIO_BREAKPOINT && clientWidth >= SINGLE_COLUMN_BREAKPOINT) {
-            // Forcing the recomputation of tiles when screen switches in or out of
-            // the (ASPECT_RATIO_BREAKPOINT, SINGLE_COLUMN_BREAKPOINT] interval.
-            return responsiveColumnMapping.twoParticipantsSingleColumn;
-        } else if (clientWidth < SINGLE_COLUMN_BREAKPOINT) {
-            // Forcing the recomputation of tiles when screen switches below SINGLE_COLUMN_BREAKPOINT.
-            return responsiveColumnMapping.singleColumn;
-        }
-
-        // Forcing the recomputation of tiles when screen switches above TWO_COLUMN_BREAKPOINT.
-        return responsiveColumnMapping.multipleColumns;
-    },
-    /* listener */ (_, store) => {
-        const state = store.getState();
-
-        if (shouldDisplayTileView(state)) {
-            const gridDimensions = getTileViewGridDimensions(state);
-
-            store.dispatch(setTileViewDimensions(gridDimensions));
-        }
-    });
+/**
+ * Listens for changes in the chat state to calculate the dimensions of the tile view grid and the tiles.
+ */
+StateListenerRegistry.register(
+    /* selector */ state => state['features/chat'].isOpen,
+    /* listener */ listener);

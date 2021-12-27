@@ -1,34 +1,37 @@
 // @flow
 
 import React, { PureComponent } from 'react';
-import { Divider } from 'react-native-paper';
+import { TouchableOpacity, View } from 'react-native';
+import Collapsible from 'react-native-collapsible';
 
 import { ColorSchemeRegistry } from '../../../base/color-scheme';
 import { BottomSheet, hideDialog, isDialogOpen } from '../../../base/dialog';
+import { IconDragHandle, IconVideoQualityHD, IconVideoQualityLD } from '../../../base/icons';
 import { connect } from '../../../base/redux';
 import { StyleType } from '../../../base/styles';
 import { SharedDocumentButton } from '../../../etherpad';
+import { InviteButton } from '../../../invite';
+import { LobbyModeButton } from '../../../lobby/components/native';
 import { AudioRouteButton } from '../../../mobile/audio-mode';
-import { ParticipantsPaneButton } from '../../../participants-pane/components/native';
-import { ReactionMenu } from '../../../reactions/components';
-import { isReactionsEnabled } from '../../../reactions/functions.any';
 import { LiveStreamButton, RecordButton } from '../../../recording';
-import SecurityDialogButton
-    from '../../../security/components/security-dialog/native/SecurityDialogButton';
-import { SharedVideoButton } from '../../../shared-video/components';
-import SpeakerStatsButton from '../../../speaker-stats/components/native/SpeakerStatsButton';
+import { RoomLockButton } from '../../../room-lock';
 import { ClosedCaptionButton } from '../../../subtitles';
 import { TileViewButton } from '../../../video-layout';
-import styles from '../../../video-menu/components/native/styles';
-import { getMovableButtons } from '../../functions.native';
+import { VideoShareButton } from '../../../youtube-player/components';
 import HelpButton from '../HelpButton';
 import MuteEveryoneButton from '../MuteEveryoneButton';
-import MuteEveryonesVideoButton from '../MuteEveryonesVideoButton';
 
 import AudioOnlyButton from './AudioOnlyButton';
+import MoreOptionsButton from './MoreOptionsButton';
 import RaiseHandButton from './RaiseHandButton';
 import ScreenSharingButton from './ScreenSharingButton.js';
 import ToggleCameraButton from './ToggleCameraButton';
+import styles from './styles';
+import VideoQualityButton from './VideoQualityButton';
+import { VideoQualityDialog } from '../../../video-quality';
+import { VIDEO_QUALITY_LEVELS } from '../../../video-quality/constants';
+import { getCurrentPreferredVideoQuality } from '../../../videoapi/api';
+import { getFeatureFlag, TOOLBAR_BUTTONS } from '../../../base/flags';
 
 /**
  * The type of the React {@code Component} props of {@link OverflowMenu}.
@@ -51,16 +54,6 @@ type Props = {
     _recordingEnabled: boolean,
 
     /**
-     * The width of the screen.
-     */
-    _width: number,
-
-    /**
-     * Whether or not the reactions feature is enabled.
-     */
-    _reactionsEnabled: boolean,
-
-    /**
      * Used for hiding the dialog when the selection was completed.
      */
     dispatch: Function
@@ -71,7 +64,15 @@ type State = {
     /**
      * True if the bottom scheet is scrolled to the top.
      */
-    scrolledToTop: boolean
+    scrolledToTop: boolean,
+
+    /**
+     * True if the 'more' button set needas to be rendered.
+     */
+    showMore: boolean,
+
+    showVideoQuality: boolean,
+    videoQualityIcon: Object,
 }
 
 /**
@@ -97,12 +98,19 @@ class OverflowMenu extends PureComponent<Props, State> {
         super(props);
 
         this.state = {
-            scrolledToTop: true
+            scrolledToTop: true,
+            showMore: false,
+            showVideoQuality: false,
+            videoQualityIcon: IconVideoQualityLD
         };
 
         // Bind event handlers so they are only bound once per instance.
         this._onCancel = this._onCancel.bind(this);
-        this._renderReactionMenu = this._renderReactionMenu.bind(this);
+        this._onSwipe = this._onSwipe.bind(this);
+        this._onToggleMenu = this._onToggleMenu.bind(this);
+        this._onVideoQuality = this._onVideoQuality.bind(this);
+
+        this._renderMenuExpandToggle = this._renderMenuExpandToggle.bind(this);
     }
 
     /**
@@ -112,8 +120,8 @@ class OverflowMenu extends PureComponent<Props, State> {
      * @returns {ReactElement}
      */
     render() {
-        const { _bottomSheetStyles, _width, _reactionsEnabled } = this.props;
-        const toolbarButtons = getMovableButtons(_width);
+        const { _bottomSheetStyles } = this.props;
+        const { showMore, showVideoQuality, videoQualityIcon } = this.state;
 
         const buttonProps = {
             afterClick: this._onCancel,
@@ -121,46 +129,79 @@ class OverflowMenu extends PureComponent<Props, State> {
             styles: _bottomSheetStyles.buttons
         };
 
-        const topButtonProps = {
-            afterClick: this._onCancel,
-            showLabel: true,
-            styles: {
-                ..._bottomSheetStyles.buttons,
-                style: {
-                    ..._bottomSheetStyles.buttons.style,
-                    borderTopLeftRadius: 16,
-                    borderTopRightRadius: 16
-                }
-            }
+        const moreOptionsButtonProps = {
+            ...buttonProps,
+            afterClick: this._onToggleMenu,
+            visible: !showMore
         };
+
+        const videoQualityMenuOptionsButtonProps = {
+            ...buttonProps,
+            afterClick: this._onVideoQuality,
+            visible: !showVideoQuality
+        };
+
+        const videoQualityOptionsButtonProps = {
+            ...buttonProps,
+            afterClick: this._onVideoQuality
+        };
+
+        const hasMuteEveryone = this.props.toolbarButtons.indexOf('mute-everyone') >= 0;
+        const hasTileView = this.props.toolbarButtons.indexOf('tileview') >= 0;
+        const hasInvite = this.props.toolbarButtons.indexOf('invite') >= 0;
 
         return (
             <BottomSheet
                 onCancel = { this._onCancel }
-                renderFooter = { _reactionsEnabled && !toolbarButtons.has('raisehand')
-                    ? this._renderReactionMenu
-                    : null }>
-                <AudioRouteButton { ...topButtonProps } />
-                <ParticipantsPaneButton { ...buttonProps } />
+                onSwipe = { this._onSwipe }
+                renderHeader = { this._renderMenuExpandToggle }>
+                <AudioRouteButton { ...buttonProps } />
+                { hasInvite && <InviteButton { ...buttonProps } /> }
+                <VideoQualityButton
+                    icon = { videoQualityIcon }
+                    isMenu = { true }
+                    { ...videoQualityMenuOptionsButtonProps } />
+                <Collapsible collapsed = { !showVideoQuality }>
+                    <VideoQualityButton quality = { VIDEO_QUALITY_LEVELS.LOW }  { ...videoQualityOptionsButtonProps }/>
+                    <VideoQualityButton quality = { VIDEO_QUALITY_LEVELS.STANDARD } { ...videoQualityOptionsButtonProps } />
+                    <VideoQualityButton quality = { VIDEO_QUALITY_LEVELS.HIGH } { ...videoQualityOptionsButtonProps } />
+                </Collapsible>
                 <AudioOnlyButton { ...buttonProps } />
-                {!_reactionsEnabled && !toolbarButtons.has('raisehand') && <RaiseHandButton { ...buttonProps } />}
-                <Divider style = { styles.divider } />
-                <SecurityDialogButton { ...buttonProps } />
-                <RecordButton { ...buttonProps } />
-                <LiveStreamButton { ...buttonProps } />
-                <MuteEveryoneButton { ...buttonProps } />
-                <MuteEveryonesVideoButton { ...buttonProps } />
-                <Divider style = { styles.divider } />
-                <SharedVideoButton { ...buttonProps } />
-                <ScreenSharingButton { ...buttonProps } />
-                <SpeakerStatsButton { ...buttonProps } />
-                {!toolbarButtons.has('togglecamera') && <ToggleCameraButton { ...buttonProps } />}
-                {!toolbarButtons.has('tileview') && <TileViewButton { ...buttonProps } />}
-                <Divider style = { styles.divider } />
-                <ClosedCaptionButton { ...buttonProps } />
-                <SharedDocumentButton { ...buttonProps } />
-                <HelpButton { ...buttonProps } />
+                <LobbyModeButton { ...buttonProps } />
+                <ToggleCameraButton { ...buttonProps } />
+                { hasTileView && <TileViewButton { ...buttonProps } /> }
+                <MoreOptionsButton { ...moreOptionsButtonProps } />
+                <Collapsible collapsed = { !showMore }>
+                    <RecordButton { ...buttonProps } />
+                    <RoomLockButton { ...buttonProps } />
+                    <ClosedCaptionButton { ...buttonProps } />
+                    <SharedDocumentButton { ...buttonProps } />
+                    { hasMuteEveryone && <MuteEveryoneButton { ...buttonProps } /> }
+                    <HelpButton { ...buttonProps } />
+                </Collapsible>
             </BottomSheet>
+        );
+    }
+
+    _renderMenuExpandToggle: () => React$Element<any>;
+
+    /**
+     * Function to render the menu toggle in the bottom sheet header area.
+     *
+     * @returns {React$Element}
+     */
+    _renderMenuExpandToggle() {
+        return (
+            <View
+                style = { [
+                    this.props._bottomSheetStyles.sheet,
+                    styles.expandMenuContainer
+                ] }>
+                <TouchableOpacity onPress = { this._onToggleMenu }>
+                    { /* $FlowFixMeProps */ }
+                    <IconDragHandle style = { this.props._bottomSheetStyles.expandIcon } />
+                </TouchableOpacity>
+            </View>
         );
     }
 
@@ -182,17 +223,73 @@ class OverflowMenu extends PureComponent<Props, State> {
         return false;
     }
 
-    _renderReactionMenu: () => React$Element<any>;
+    _onSwipe: string => void;
 
     /**
-     * Functoin to render the reaction menu as the footer of the bottom sheet.
+     * Callback to be invoked when swipe gesture is detected on the menu. Returns true
+     * if the swipe gesture is handled by the menu, false otherwise.
      *
-     * @returns {React$Element}
+     * @param {string} direction - Direction of 'up' or 'down'.
+     * @returns {boolean}
      */
-    _renderReactionMenu() {
-        return (<ReactionMenu
-            onCancel = { this._onCancel }
-            overflowMenu = { true } />);
+    _onSwipe(direction) {
+        const { showMore } = this.state;
+
+        switch (direction) {
+        case 'up':
+            !showMore && this.setState({
+                showMore: true
+            });
+
+            return !showMore;
+        case 'down':
+            showMore && this.setState({
+                showMore: false
+            });
+
+            return showMore;
+        }
+    }
+
+    _onToggleMenu: () => void;
+
+    /**
+     * Callback to be invoked when the expand menu button is pressed.
+     *
+     * @returns {void}
+     */
+    _onToggleMenu() {
+        this.setState({
+            showMore: !this.state.showMore
+        });
+    }
+
+    _onVideoQuality: () => void;
+
+    /**
+     * Callback to be invoked when the video quality menu button is pressed.
+     *
+     * @returns {void}
+     */
+    _onVideoQuality() {
+        let icon = IconVideoQualityHD;
+        switch (getCurrentPreferredVideoQuality()) {
+            case VIDEO_QUALITY_LEVELS.LOW:
+                icon = IconVideoQualityLD;
+                break
+            case VIDEO_QUALITY_LEVELS.STANDARD:
+                icon = IconVideoQualitySD;
+                break
+            case VIDEO_QUALITY_LEVELS.HIGH:
+            default:
+                icon = IconVideoQualityHD;
+                break
+            }
+
+        this.setState({
+            videoQualityIcon: icon,
+            showVideoQuality: !this.state.showVideoQuality
+        });
     }
 }
 
@@ -207,8 +304,8 @@ function _mapStateToProps(state) {
     return {
         _bottomSheetStyles: ColorSchemeRegistry.get(state, 'BottomSheet'),
         _isOpen: isDialogOpen(state, OverflowMenu_),
-        _width: state['features/base/responsive-ui'].clientWidth,
-        _reactionsEnabled: isReactionsEnabled(state)
+        toolbarButtons: getFeatureFlag(state, TOOLBAR_BUTTONS,
+            '')
     };
 }
 

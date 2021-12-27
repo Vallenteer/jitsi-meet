@@ -12,6 +12,13 @@ ReducerRegistry.register('features/base/app', (state = {}, action) => {
         if (state.app !== app) {
             return {
                 ...state,
+
+                /**
+                 * The one and only (i.e. singleton) {@link BaseApp} instance
+                 * which is currently mounted.
+                 *
+                 * @type {BaseApp}
+                 */
                 app
             };
         }

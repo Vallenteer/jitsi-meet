@@ -2,10 +2,10 @@
 
 import { translate } from '../../base/i18n';
 import { IconInfo } from '../../base/icons';
+import { setActiveModalId } from '../../base/modal';
 import { connect } from '../../base/redux';
 import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
-import { screen } from '../../conference/components/native/routes';
-import { navigate } from '../../welcome/components/RootNavigationContainerRef';
+import { DIAL_IN_SUMMARY_VIEW_ID } from '../../invite/constants';
 
 export type Props = AbstractButtonProps & {
 
@@ -40,11 +40,9 @@ class ShowDialInInfoButton extends AbstractButton<Props, *> {
      * @returns {void}
      */
     _handleClick() {
-        const { itemId } = this.props;
+        const { dispatch, itemId } = this.props;
 
-        navigate(screen.dialInSummary, {
-            summaryUrl: itemId.url
-        });
+        dispatch(setActiveModalId(DIAL_IN_SUMMARY_VIEW_ID, { summaryUrl: itemId.url }));
     }
 }
 

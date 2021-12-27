@@ -1,39 +1,24 @@
 // @flow
 
-import { withStyles } from '@material-ui/core/styles';
 import React from 'react';
+import { openDialog } from '../../../base/dialog';
 
 import { translate } from '../../../base/i18n';
-import { Label } from '../../../base/label';
+import { StopRecordingDialog } from '../Recording';
 import { JitsiRecordingConstants } from '../../../base/lib-jitsi-meet';
 import { connect } from '../../../base/redux';
+import { getLocalParticipant, PARTICIPANT_ROLE } from '../../../base/participants';
 import AbstractRecordingLabel, {
     _mapStateToProps
 } from '../AbstractRecordingLabel';
-
-/**
- * Creates the styles for the component.
- *
- * @param {Object} theme - The current UI theme.
- *
- * @returns {Object}
- */
-const styles = theme => {
-    return {
-        [JitsiRecordingConstants.mode.STREAM]: {
-            background: theme.palette.ui03
-        },
-        [JitsiRecordingConstants.mode.FILE]: {
-            background: theme.palette.iconError
-        }
-    };
-};
+import { IconRemoteControlStop } from '../../../base/icons';
+import { Icon } from '../../../base/icons';
 
 /**
  * Implements a React {@link Component} which displays the current state of
  * conference recording.
  *
- * @augments {Component}
+ * @extends {Component}
  */
 class RecordingLabel extends AbstractRecordingLabel {
     /**
@@ -41,25 +26,50 @@ class RecordingLabel extends AbstractRecordingLabel {
      *
      * @inheritdoc
      */
+    //xxx
     _renderLabel() {
         if (this.props._status !== JitsiRecordingConstants.status.ON) {
             // Since there are no expanded labels on web, we only render this
             // label when the recording status is ON.
-            return null;
+            //return null;
         }
-
-        const { classes, mode, t } = this.props;
-
+        const participantStyle = this.props._isModerator && this.props._status === 'on' ? '' : 'participant';
         return (
-            <div>
-                <Label
-                    className = { classes && classes[mode] }
-                    text = { t(this._getLabelKey()) } />
+            <div className="videoapi-recording-indicator">
+                <div 
+                    className={ `text ${participantStyle}` }
+                    style= {{
+                        borderRadius: participantStyle !== '' ? '7px 7px 7px 7px' : '7px 0 0 7px'
+                    }}>
+                        { this.props.t(this._getLabelKey()) }
+                </div>
+                { this.props._isModerator && this.props._status === 'on' && (
+                <div className="button"
+                onClick = { () => {
+                    this.props.dispatch(openDialog(StopRecordingDialog));
+                }}
+                >
+                    <Icon 
+                        src={ IconRemoteControlStop } 
+                        size={12} />
+                </div>
+                )} 
             </div>
         );
     }
 
-    _getLabelKey: () => ?string;
+    _getLabelKey: () => ?string
 }
 
-export default withStyles(styles)(translate(connect(_mapStateToProps)(RecordingLabel)));
+function _myMapStateToProps(state, ownProps: Prop) {
+    const localParticipant = getLocalParticipant(state);
+    return {
+        ..._mapStateToProps(state, ownProps),
+        _iAmRecorder: state['features/base/config'].iAmRecorder,
+        _isModerator: localParticipant.role === PARTICIPANT_ROLE.MODERATOR
+
+    };
+}
+
+export default translate(connect(_myMapStateToProps)(RecordingLabel));
+

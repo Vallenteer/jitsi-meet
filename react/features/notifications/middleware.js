@@ -7,21 +7,19 @@ import {
     PARTICIPANT_ROLE,
     PARTICIPANT_UPDATED,
     getParticipantById,
-    getParticipantDisplayName,
-    getLocalParticipant
+    getParticipantDisplayName
 } from '../base/participants';
 import { MiddlewareRegistry, StateListenerRegistry } from '../base/redux';
-import { PARTICIPANTS_PANE_OPEN } from '../participants-pane/actionTypes';
 
 import {
     clearNotifications,
-    hideRaiseHandNotifications,
     showNotification,
-    showParticipantJoinedNotification,
-    showParticipantLeftNotification
+    showParticipantJoinedNotification
 } from './actions';
-import { NOTIFICATION_TIMEOUT_TYPE } from './constants';
+import { NOTIFICATION_TIMEOUT } from './constants';
 import { joinLeaveNotificationsDisabled } from './functions';
+
+declare var interfaceConfig: Object;
 
 /**
  * Middleware that captures actions to display notifications.
@@ -35,66 +33,73 @@ MiddlewareRegistry.register(store => next => action => {
         const result = next(action);
         const { participant: p } = action;
         const { dispatch, getState } = store;
-        const state = getState();
-        const { conference } = state['features/base/conference'];
 
-        if (conference && !p.local && !joinLeaveNotificationsDisabled() && !p.isReplacing) {
+        if (!p.local && !joinLeaveNotificationsDisabled()) {
             dispatch(showParticipantJoinedNotification(
-                getParticipantDisplayName(state, p.id)
+                getParticipantDisplayName(getState, p.id)
             ));
+        }
+
+        if (typeof interfaceConfig === 'object'
+                && !interfaceConfig.DISABLE_FOCUS_INDICATOR && p.role === PARTICIPANT_ROLE.MODERATOR) {
+            // Do not show the notification for mobile and also when the focus indicator is disabled.
+            const displayName = getParticipantDisplayName(getState, p.id);
+
+            dispatch(showNotification({
+                descriptionArguments: { to: displayName || '$t(notify.somebody)' },
+                descriptionKey: 'notify.grantedTo',
+                titleKey: 'notify.somebody',
+                title: displayName
+            },
+            NOTIFICATION_TIMEOUT));
         }
 
         return result;
     }
     case PARTICIPANT_LEFT: {
         if (!joinLeaveNotificationsDisabled()) {
-            const { dispatch, getState } = store;
-            const state = getState();
             const participant = getParticipantById(
                 store.getState(),
                 action.participant.id
             );
 
-            if (participant && !participant.local && !action.participant.isReplaced) {
-                dispatch(showParticipantLeftNotification(
-                    getParticipantDisplayName(state, participant.id)
-                ));
+            if (typeof interfaceConfig === 'object'
+                && participant
+                && !participant.local) {
+                store.dispatch(showNotification({
+                    descriptionKey: 'notify.disconnected',
+                    titleKey: 'notify.somebody',
+                    title: participant.name
+                }, NOTIFICATION_TIMEOUT));
             }
         }
 
         return next(action);
     }
     case PARTICIPANT_UPDATED: {
-        const state = store.getState();
-        const { disableModeratorIndicator } = state['features/base/config'];
-
-        if (disableModeratorIndicator) {
+        if (typeof interfaceConfig === 'undefined' || interfaceConfig.DISABLE_FOCUS_INDICATOR) {
+            // Do not show the notification for mobile and also when the focus indicator is disabled.
             return next(action);
         }
 
         const { id, role } = action.participant;
-        const localParticipant = getLocalParticipant(state);
-
-        if (localParticipant?.id !== id) {
-            return next(action);
-        }
-
+        const state = store.getState();
         const oldParticipant = getParticipantById(state, id);
         const oldRole = oldParticipant?.role;
 
         if (oldRole && oldRole !== role && role === PARTICIPANT_ROLE.MODERATOR) {
+            const displayName = getParticipantDisplayName(state, id);
 
             store.dispatch(showNotification({
-                titleKey: 'notify.moderator'
+                descriptionArguments: { to: displayName || '$t(notify.somebody)' },
+                descriptionKey: 'notify.grantedTo',
+                titleKey: 'notify.somebody',
+                title: displayName
             },
-            NOTIFICATION_TIMEOUT_TYPE.SHORT));
+            NOTIFICATION_TIMEOUT));
         }
 
         return next(action);
-    }
-    case PARTICIPANTS_PANE_OPEN: {
-        store.dispatch(hideRaiseHandNotifications());
-        break;
     }
     }
 

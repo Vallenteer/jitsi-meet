@@ -5,10 +5,10 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import { browser } from '../../../react/features/base/lib-jitsi-meet';
-import { isTestModeEnabled } from '../../../react/features/base/testing';
-import { ORIENTATION, LargeVideoBackground, updateLastLargeVideoMediaEvent } from '../../../react/features/large-video';
+import { ORIENTATION, LargeVideoBackground } from '../../../react/features/large-video';
 import { LAYOUTS, getCurrentLayout } from '../../../react/features/video-layout';
 /* eslint-enable no-unused-vars */
+import UIEvents from '../../../service/UI/UIEvents';
 import UIUtil from '../util/UIUtil';
 
 import Filmstrip from './Filmstrip';
@@ -18,15 +18,6 @@ import LargeContainer from './LargeContainer';
 export const VIDEO_CONTAINER_TYPE = 'camera';
 
 const FADE_DURATION_MS = 300;
-
-/**
- * List of container events that we are going to process, will be added as listener to the
- * container for every event in the list. The latest event will be stored in redux.
- */
-const containerEvents = [
-    'abort', 'canplay', 'canplaythrough', 'emptied', 'ended', 'error', 'loadeddata', 'loadedmetadata', 'loadstart',
-    'pause', 'play', 'playing', 'ratechange', 'stalled', 'suspend', 'waiting'
-];
 
 /**
  * Returns an array of the video dimensions, so that it keeps it's aspect
@@ -45,7 +36,7 @@ function computeDesktopVideoSize( // eslint-disable-line max-params
         videoSpaceWidth,
         videoSpaceHeight) {
     if (videoWidth === 0 || videoHeight === 0 || videoSpaceWidth === 0 || videoSpaceHeight === 0) {
-        // Avoid NaN values caused by division by 0.
+        // Avoid NaN values caused by devision by 0.
         return [ 0, 0 ];
     }
 
@@ -58,7 +49,7 @@ function computeDesktopVideoSize( // eslint-disable-line max-params
         videoSpaceWidth -= Filmstrip.getVerticalFilmstripWidth();
     } else {
         // eslint-disable-next-line no-param-reassign
-        videoSpaceHeight -= Filmstrip.getFilmstripHeight();
+        videoSpaceHeight -= 208;
     }
 
     if (availableWidth / aspectRatio >= videoSpaceHeight) {
@@ -93,26 +84,19 @@ function computeCameraVideoSize( // eslint-disable-line max-params
         videoSpaceHeight,
         videoLayoutFit) {
     if (videoWidth === 0 || videoHeight === 0 || videoSpaceWidth === 0 || videoSpaceHeight === 0) {
-        // Avoid NaN values caused by division by 0.
+        // Avoid NaN values caused by devision by 0.
         return [ 0, 0 ];
     }
 
     const aspectRatio = videoWidth / videoHeight;
-    const videoSpaceRatio = videoSpaceWidth / videoSpaceHeight;
 
     switch (videoLayoutFit) {
     case 'height':
         return [ videoSpaceHeight * aspectRatio, videoSpaceHeight ];
     case 'width':
         return [ videoSpaceWidth, videoSpaceWidth / aspectRatio ];
-    case 'nocrop':
-        return computeCameraVideoSize(
-            videoWidth,
-            videoHeight,
-            videoSpaceWidth,
-            videoSpaceHeight,
-            videoSpaceRatio < aspectRatio ? 'width' : 'height');
     case 'both': {
+        const videoSpaceRatio = videoSpaceWidth / videoSpaceHeight;
         const maxZoomCoefficient = interfaceConfig.MAXIMUM_ZOOMING_COEFFICIENT
             || Infinity;
 
@@ -155,7 +139,8 @@ function getCameraVideoPosition( // eslint-disable-line max-params
         videoWidth,
         videoHeight,
         videoSpaceWidth,
-        videoSpaceHeight) {
+        videoSpaceHeight,
+        isShareScreen = false) {
     // Parent height isn't completely calculated when we position the video in
     // full screen mode and this is why we use the screen height in this case.
     // Need to think it further at some point and implement it properly.
@@ -165,7 +150,13 @@ function getCameraVideoPosition( // eslint-disable-line max-params
     }
 
     const horizontalIndent = (videoSpaceWidth - videoWidth) / 2;
-    const verticalIndent = (videoSpaceHeight - videoHeight) / 2;
+    let verticalIndent = ((videoSpaceHeight - videoHeight) / 2);
+    
+    if(isShareScreen) {
+        verticalIndent += 31;
+    }
+    // const horizontalIndent =  videoWidth / 8;
+    // const verticalIndent =  videoHeight / 8;
 
     return { horizontalIndent,
         verticalIndent };
@@ -173,7 +164,7 @@ function getCameraVideoPosition( // eslint-disable-line max-params
 
 /**
  * Container for user video.
- */
+ */ 
 export class VideoContainer extends LargeContainer {
     /**
      *
@@ -193,14 +184,18 @@ export class VideoContainer extends LargeContainer {
      * Creates new VideoContainer instance.
      * @param resizeContainer {Function} function that takes care of the size
      * of the video container.
+     * @param emitter {EventEmitter} the event emitter that will be used by
+     * this instance.
      */
-    constructor(resizeContainer) {
+    constructor(resizeContainer, emitter, offset) {
         super();
         this.stream = null;
         this.userId = null;
         this.videoType = null;
         this.localFlipX = true;
+        this.emitter = emitter;
         this.resizeContainer = resizeContainer;
+        this.offset = offset;
 
         /**
          * Whether the background should fit the height of the container
@@ -236,6 +231,14 @@ export class VideoContainer extends LargeContainer {
 
         this.$remotePresenceMessage = $('#remotePresenceMessage');
 
+        /**
+         * Indicates whether or not the video stream attached to the video
+         * element has started(which means that there is any image rendered
+         * even if the video is stalled).
+         * @type {boolean}
+         */
+        this.wasVideoRendered = false;
+
         this.$wrapper = $('#largeVideoWrapper');
 
         /**
@@ -244,12 +247,17 @@ export class VideoContainer extends LargeContainer {
          * video anyway.
          */
         this.$wrapperParent = this.$wrapper.parent();
+
         this.avatarHeight = $('#dominantSpeakerAvatarContainer').height();
-        this.$video[0].onplaying = function(event) {
+
+        const onPlayingCallback = function(event) {
             if (typeof resizeContainer === 'function') {
                 resizeContainer(event);
             }
-        };
+            this.wasVideoRendered = true;
+        }.bind(this);
+
+        this.$video[0].onplaying = onPlayingCallback;
 
         /**
          * A Set of functions to invoke when the video element resizes.
@@ -259,14 +267,6 @@ export class VideoContainer extends LargeContainer {
         this._resizeListeners = new Set();
 
         this.$video[0].onresize = this._onResize.bind(this);
-
-        if (isTestModeEnabled(APP.store.getState())) {
-            const cb = name => APP.store.dispatch(updateLastLargeVideoMediaEvent(name));
-
-            containerEvents.forEach(event => {
-                this.$video[0].addEventListener(event, cb.bind(this, event));
-            });
-        }
     }
 
     /**
@@ -348,13 +348,15 @@ export class VideoContainer extends LargeContainer {
             return getCameraVideoPosition(width,
                 height,
                 containerWidthToUse,
-                containerHeight);
+                containerHeight,
+                this.isScreenSharing());
         }
 
         return getCameraVideoPosition(width,
                 height,
                 containerWidthToUse,
-                containerHeight);
+                containerHeight,
+                this.isScreenSharing());
 
     }
 
@@ -403,6 +405,9 @@ export class VideoContainer extends LargeContainer {
         }
         const currentLayout = getCurrentLayout(APP.store.getState());
 
+        const state = APP.store.getState();
+        const shiftLeft = state['features/videoapi/modal-dialog'].isOpen || state['features/chat'].isOpen;
+
         if (currentLayout === LAYOUTS.TILE_VIEW) {
             // We don't need to resize the large video since it won't be displayed and we'll resize when returning back
             // to stage view.
@@ -411,10 +416,10 @@ export class VideoContainer extends LargeContainer {
 
         this.positionRemoteStatusMessages();
 
-        const [ width, height ] = this._getVideoSize(containerWidth, containerHeight);
+        let [ width, height ] = this._getVideoSize(containerWidth, containerHeight);
 
         if (width === 0 || height === 0) {
-            // We don't need to set 0 for width or height since the visibility is controlled by the visibility css prop
+            // We don't need to set 0 for width or height since the visibility is controled by the visibility css prop
             // on the largeVideoElementsContainer. Also if the width/height of the video element is 0 the attached
             // stream won't be played. Normally if we attach a new stream we won't resize the video element until the
             // stream has been played. But setting width/height to 0 will prevent the video from playing.
@@ -481,6 +486,10 @@ export class VideoContainer extends LargeContainer {
             return;
         }
 
+        // The stream has changed, so the image will be lost on detach
+        this.wasVideoRendered = false;
+
+
         // detach old stream
         if (this.stream) {
             this.stream.detach(this.$video[0]);
@@ -495,11 +504,7 @@ export class VideoContainer extends LargeContainer {
 
         stream.attach(this.$video[0]);
 
-        // Ensure large video gets play() called on it when a new stream is attached to it. This is necessary in the
-        // case of Safari as autoplay doesn't kick-in automatically on Safari 15 and newer versions.
-        browser.isWebKitBased() && this.$video[0].play();
-
-        const flipX = stream.isLocal() && this.localFlipX && !this.isScreenSharing();
+        const flipX = stream.isLocal() && this.localFlipX;
 
         this.$video.css({
             transform: flipX ? 'scaleX(-1)' : 'none'
@@ -541,6 +546,7 @@ export class VideoContainer extends LargeContainer {
         this.$avatar.css('visibility', show ? 'visible' : 'hidden');
         this.avatarDisplayed = show;
 
+        this.emitter.emit(UIEvents.LARGE_VIDEO_AVATAR_VISIBLE, show);
         APP.API.notifyLargeVideoVisibilityChanged(show);
     }
 
@@ -616,10 +622,11 @@ export class VideoContainer extends LargeContainer {
         // explicitly disabled.
         if (interfaceConfig.DISABLE_VIDEO_BACKGROUND
                 || browser.isFirefox()
-                || browser.isWebKitBased()) {
+                || browser.isSafari()) {
             return;
         }
 
+        return // General#252
         ReactDOM.render(
             <LargeVideoBackground
                 hidden = { this._hideBackground || this._isHidden }

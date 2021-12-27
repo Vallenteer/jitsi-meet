@@ -20,11 +20,6 @@ export type Props = {
     onAvatarLoadError?: Function,
 
     /**
-     * Additional parameters to be passed to onAvatarLoadError function.
-     */
-    onAvatarLoadErrorParams?: Object,
-
-    /**
      * Expected size of the avatar.
      */
     size?: number;

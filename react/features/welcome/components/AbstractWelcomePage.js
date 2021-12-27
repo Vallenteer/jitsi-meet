@@ -13,7 +13,7 @@ import { isRecentListEnabled } from '../../recent-list/functions';
 /**
  * {@code AbstractWelcomePage}'s React {@code Component} prop types.
  */
-export type Props = {
+type Props = {
 
     /**
      * Whether the calendar functionality is enabled or not.
@@ -31,7 +31,7 @@ export type Props = {
     _moderatedRoomServiceUrl: ?string,
 
     /**
-     * Whether the recent list is enabled.
+     * Whether the recent list is enabled
      */
     _recentListEnabled: Boolean,
 
@@ -56,7 +56,7 @@ export type Props = {
  *
  * @abstract
  */
-export class AbstractWelcomePage<P: Props> extends Component<P, *> {
+export class AbstractWelcomePage extends Component<Props, *> {
     _mounted: ?boolean;
 
     /**
@@ -64,7 +64,7 @@ export class AbstractWelcomePage<P: Props> extends Component<P, *> {
      *
      * @inheritdoc
      */
-    static getDerivedStateFromProps(props: P, state: Object) {
+    static getDerivedStateFromProps(props: Props, state: Object) {
         return {
             room: props._room || state.room
         };
@@ -80,7 +80,7 @@ export class AbstractWelcomePage<P: Props> extends Component<P, *> {
      * @property {string} room - Room name.
      * @property {string} roomPlaceholder - Room placeholder that's used as a
      * placeholder for input.
-     * @property {number|null} updateTimeoutId - Identifier of the timeout
+     * @property {nubmer|null} updateTimeoutId - Identifier of the timeout
      * updating the generated room name.
      */
     state = {
@@ -99,7 +99,7 @@ export class AbstractWelcomePage<P: Props> extends Component<P, *> {
      * @param {Props} props - The React {@code Component} props to initialize
      * the new {@code AbstractWelcomePage} instance with.
      */
-    constructor(props: P) {
+    constructor(props: Props) {
         super(props);
 
         // Bind event handlers so they are only bound once per instance.
@@ -228,7 +228,7 @@ export class AbstractWelcomePage<P: Props> extends Component<P, *> {
         });
     }
 
-    _renderInsecureRoomNameWarning: () => React$Component<any>;
+    _renderInsecureRoomNameWarning: () => React$Component<any>;;
 
     /**
      * Renders the insecure room name warning if needed.

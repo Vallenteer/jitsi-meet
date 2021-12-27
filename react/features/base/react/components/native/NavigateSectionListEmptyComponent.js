@@ -18,9 +18,9 @@ type Props = {
 
 /**
  * Implements a React Native {@link Component} that is to be displayed when the
- * list is empty.
+ * list is empty
  *
- * @augments Component
+ * @extends Component
  */
 class NavigateSectionListEmptyComponent extends Component<Props> {
     /**

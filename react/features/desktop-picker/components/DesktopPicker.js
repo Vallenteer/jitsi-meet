@@ -80,7 +80,7 @@ type State = {
     screenShareAudio: boolean,
 
     /**
-     * The currently highlighted DesktopCapturerSource.
+     * The currently higlighted DesktopCapturerSource.
      */
     selectedSource: Object,
 
@@ -104,7 +104,7 @@ type State = {
 /**
  * React component for DesktopPicker.
  *
- * @augments Component
+ * @extends Component
  */
 class DesktopPicker extends PureComponent<Props, State> {
     /**
@@ -371,7 +371,7 @@ class DesktopPicker extends PureComponent<Props, State> {
     }
 
     /**
-     * Create an interval to update known available DesktopCapturerSources.
+     * Create an interval to update knwon available DesktopCapturerSources.
      *
      * @private
      * @returns {void}

@@ -42,24 +42,6 @@ export function isBrowsersOptimal(browserName: string) {
 }
 
 /**
- * Returns whether or not the current OS is Mac.
- *
- * @returns {boolean}
- */
-export function isMacOS() {
-    return Platform.OS === 'macos';
-}
-
-/**
- * Returns whether or not the current OS is Windows.
- *
- * @returns {boolean}
- */
-export function isWindows() {
-    return Platform.OS === 'windows';
-}
-
-/**
  * Returns whether or not the current browser or the list of passed in browsers
  * is considered suboptimal. Suboptimal means it is a supported browser but has
  * not been explicitly listed as being optimal, possibly due to functionality
@@ -94,7 +76,11 @@ export function isSupportedBrowser() {
         return false;
     }
 
-    return isMobileBrowser() ? isSupportedMobileBrowser() : JitsiMeetJS.isWebRtcSupported();
+    // We are intentionally allow mobile browsers because:
+    // - the WelcomePage is mobile ready;
+    // - if the URL points to a conference then deep-linking will take
+    //   care of it.
+    return isMobileBrowser() || JitsiMeetJS.isWebRtcSupported();
 }
 
 /**
@@ -104,8 +90,9 @@ export function isSupportedBrowser() {
  * @returns {boolean}
  */
 export function isSupportedMobileBrowser() {
-    return (Platform.OS === 'android' && browser.isSupportedAndroidBrowser())
-        || (Platform.OS === 'ios' && browser.isSupportedIOSBrowser());
+    return (Platform.OS === 'android' && browser.isChromiumBased())
+        || (Platform.OS === 'android' && browser.isFirefox())
+        || (Platform.OS === 'ios' && browser.isSafari());
 }
 
 /**

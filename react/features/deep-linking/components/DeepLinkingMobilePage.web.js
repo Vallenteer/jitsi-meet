@@ -119,7 +119,6 @@ class DeepLinkingMobilePage extends Component<Props> {
                         HIDE_DEEP_LINKING_LOGO
                             ? null
                             : <img
-                                alt = { t('welcomepage.logo.logoDeepLinking') }
                                 className = 'logo'
                                 src = 'images/logo-deep-linking.png' />
                     }
@@ -128,7 +127,6 @@ class DeepLinkingMobilePage extends Component<Props> {
                     {
                         SHOW_DEEP_LINKING_IMAGE
                             ? <img
-                                alt = { t('welcomepage.logo.logoDeepLinking') }
                                 className = 'image'
                                 src = 'images/deep-linking-image.png' />
                             : null
@@ -163,19 +161,13 @@ class DeepLinkingMobilePage extends Component<Props> {
                     </a>
                     {
                         isSupportedMobileBrowser()
-                            ? (
-                                <a
-                                    onClick = { this._onLaunchWeb }
-                                    target = '_top'>
-                                    <button className = { downloadButtonClassName }>
-                                        { t(`${_TNS}.launchWebButton`) }
-                                    </button>
-                                </a>
-                            ) : (
-                                <b>
-                                    { t(`${_TNS}.unsupportedBrowser`) }
-                                </b>
-                            )
+                            && <a
+                                onClick = { this._onLaunchWeb }
+                                target = '_top'>
+                                <button className = { downloadButtonClassName }>
+                                    { t(`${_TNS}.launchWebButton`) }
+                                </button>
+                            </a>
                     }
                     { renderPromotionalFooter() }
                     <DialInSummary

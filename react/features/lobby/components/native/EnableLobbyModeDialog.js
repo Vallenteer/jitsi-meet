@@ -7,17 +7,11 @@ import { ColorSchemeRegistry } from '../../../base/color-scheme';
 import { CustomSubmitDialog } from '../../../base/dialog';
 import { translate } from '../../../base/i18n';
 import { connect } from '../../../base/redux';
-import { StyleType } from '../../../base/styles';
 import { toggleLobbyMode } from '../../actions';
 
 import styles from './styles';
 
 type Props = {
-
-    /**
-     * The color-schemed stylesheet of the feature.
-     */
-    _dialogStyles: StyleType,
 
     /**
      * The Redux Dispatch function.
@@ -57,7 +51,7 @@ class EnableLobbyModeDialog extends PureComponent<Props> {
                 onSubmit = { this._onEnableLobbyMode }
                 titleKey = 'lobby.dialogTitle'>
                 <View style = { styles.formWrapper }>
-                    <Text style = { this.props._dialogStyles.text } >
+                    <Text>
                         { this.props.t('lobby.enableDialogText') }
                     </Text>
                 </View>

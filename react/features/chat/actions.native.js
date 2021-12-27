@@ -1,22 +1,16 @@
 // @flow
 
-import { OPEN_CHAT } from './actionTypes';
+import { TOGGLE_CHAT } from './actionTypes';
 
 export * from './actions.any';
 
 /**
- * Displays the chat panel.
+ * Toggles display of the chat panel.
  *
- * @param {Object} participant - The recipient for the private chat.
- *
- * @returns {{
- *     participant: Participant,
- *     type: OPEN_CHAT
- * }}
+ * @returns {Function}
  */
-export function openChat(participant: Object) {
-    return {
-        participant,
-        type: OPEN_CHAT
+export function toggleChat() {
+    return function(dispatch: (Object) => Object) {
+        dispatch({ type: TOGGLE_CHAT });
     };
 }

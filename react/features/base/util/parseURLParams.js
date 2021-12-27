@@ -1,15 +1,6 @@
 /* @flow */
 
-import Bourne from '@hapi/bourne';
-
 import { reportError } from './helpers';
-
-/**
- * A list if keys to ignore when parsing.
- *
- * @type {string[]}
- */
-const blacklist = [ '__proto__', 'constructor', 'prototype' ];
 
 /**
  * Parses the query/search or fragment/hash parameters out of a specific URL and
@@ -43,7 +34,7 @@ export function parseURLParams(
         const param = part.split('=');
         const key = param[0];
 
-        if (!key || key.split('.').some(k => blacklist.includes(k))) {
+        if (!key) {
             return;
         }
 
@@ -55,7 +46,7 @@ export function parseURLParams(
             if (!dontParse) {
                 const decoded = decodeURIComponent(value).replace(/\\&/, '&');
 
-                value = decoded === 'undefined' ? undefined : Bourne.parse(decoded);
+                value = decoded === 'undefined' ? undefined : JSON.parse(decoded);
             }
         } catch (e) {
             reportError(

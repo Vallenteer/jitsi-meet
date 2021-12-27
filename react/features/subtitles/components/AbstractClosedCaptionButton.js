@@ -3,8 +3,6 @@
 import { createToolbarEvent, sendAnalytics } from '../../analytics';
 import { isLocalParticipantModerator } from '../../base/participants';
 import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
-import { maybeShowPremiumFeatureDialog } from '../../jaas/actions';
-import { FEATURES } from '../../jaas/constants';
 import { toggleRequestingSubtitles } from '../actions';
 
 export type AbstractProps = AbstractButtonProps & {
@@ -37,26 +35,15 @@ export class AbstractClosedCaptionButton
      * @protected
      * @returns {void}
      */
-    async _handleClick() {
-        const { _requestingSubtitles, dispatch, handleClick } = this.props;
-
-        if (handleClick) {
-            handleClick();
-
-            return;
-        }
+    _handleClick() {
+        const { _requestingSubtitles, dispatch } = this.props;
 
         sendAnalytics(createToolbarEvent('transcribing.ccButton',
             {
                 'requesting_subtitles': Boolean(_requestingSubtitles)
             }));
 
-
-        const dialogShown = await dispatch(maybeShowPremiumFeatureDialog(FEATURES.RECORDING));
-
-        if (!dialogShown) {
-            dispatch(toggleRequestingSubtitles());
-        }
+        dispatch(toggleRequestingSubtitles());
     }
 
     /**

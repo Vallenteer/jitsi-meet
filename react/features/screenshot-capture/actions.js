@@ -1,13 +1,12 @@
 // @flow
 
 import { getLocalVideoTrack } from '../../features/base/tracks';
-
+import { createScreenshotCaptureEffect } from '../stream-effects/screenshot-capture';
 
 import { SET_SCREENSHOT_CAPTURE } from './actionTypes';
-import { createScreenshotCaptureSummary } from './functions';
 import logger from './logger';
 
-let screenshotSummary;
+let ongoingEffect;
 
 /**
  * Marks the on-off state of screenshot captures.
@@ -31,32 +30,33 @@ function setScreenshotCapture(enabled) {
 * @param {boolean} enabled - Bool that represents the intention to start/stop screenshot captures.
 * @returns {Promise}
 */
-export function toggleScreenshotCaptureSummary(enabled: boolean) {
+export function toggleScreenshotCaptureEffect(enabled: boolean) {
     return async function(dispatch: (Object) => Object, getState: () => any) {
         const state = getState();
 
         if (state['features/screenshot-capture'].capturesEnabled !== enabled) {
             const { jitsiTrack } = getLocalVideoTrack(state['features/base/tracks']);
 
-            if (!screenshotSummary) {
-                try {
-                    screenshotSummary = await createScreenshotCaptureSummary(state);
-                } catch (err) {
-                    logger.error('Cannot create screenshotCaptureSummary', err);
-                }
+            if (!ongoingEffect) {
+                ongoingEffect = await createScreenshotCaptureEffect(state);
             }
 
+            // Screenshot capture effect doesn't return a modified stream. Therefore, we don't have to
+            // switch the stream at the conference level, starting/stopping the effect will suffice here.
             if (enabled) {
                 try {
-                    await screenshotSummary.start(jitsiTrack);
+                    await ongoingEffect.startEffect(
+                        jitsiTrack.getOriginalStream(),
+                        jitsiTrack.videoType
+                    );
                     dispatch(setScreenshotCapture(enabled));
                 } catch {
 
-                    // Handle promise rejection from {@code start} due to stream type not being desktop.
+                    // Handle promise rejection from {@code startEffect} due to stream type not being desktop.
                     logger.error('Unsupported stream type.');
                 }
             } else {
-                screenshotSummary.stop();
+                ongoingEffect.stopEffect();
                 dispatch(setScreenshotCapture(enabled));
             }
         }

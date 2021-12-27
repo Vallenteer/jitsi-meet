@@ -4,8 +4,6 @@ import { findIndex } from 'lodash';
 
 import { CONNECTION_TYPE } from './constants';
 
-declare var interfaceConfig: Object;
-
 const LOSS_AUDIO_THRESHOLDS = [ 0.33, 0.05 ];
 const LOSS_VIDEO_THRESHOLDS = [ 0.33, 0.1, 0.05 ];
 
@@ -23,12 +21,12 @@ const ratio = 1 / 3;
 const maxSize = 190;
 
 /**
- * The window limit height over which the avatar should have the default dimension.
+ * The window limit hight over which the avatar should have the default dimension.
  */
 const upperHeightLimit = 760;
 
 /**
- * The window limit height under which the avatar should not be resized anymore.
+ * The window limit hight under which the avatar should not be resized anymore.
  */
 const lowerHeightLimit = 460;
 
@@ -115,8 +113,10 @@ function _getLevel(thresholds, value, descending = true) {
 /**
  * Returns the connection details from the test results.
  *
- * @param {number} testResults.fractionalLoss - Factional loss.
- * @param {number} testResults.throughput - Throughput.
+ * @param {{
+ *   fractionalLoss: number,
+ *   throughput: number
+ * }} testResults - The state of the app.
  *
  * @returns {{
  *   connectionType: string,

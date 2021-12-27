@@ -4,7 +4,7 @@ import type { Dispatch } from 'redux';
 
 import { getFeatureFlag, INVITE_ENABLED } from '../../../../base/flags';
 import { translate } from '../../../../base/i18n';
-import { IconInviteMore } from '../../../../base/icons';
+import { IconAddPeople } from '../../../../base/icons';
 import { connect } from '../../../../base/redux';
 import { AbstractButton, type AbstractButtonProps } from '../../../../base/toolbox/components';
 import { doInvitePeople } from '../../../actions.native';
@@ -23,7 +23,7 @@ type Props = AbstractButtonProps & {
  */
 class InviteButton extends AbstractButton<Props, *> {
     accessibilityLabel = 'toolbar.accessibilityLabel.shareRoom';
-    icon = IconInviteMore;
+    icon = IconAddPeople;
     label = 'toolbar.shareRoom';
 
     /**

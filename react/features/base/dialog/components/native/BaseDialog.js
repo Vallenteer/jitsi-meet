@@ -50,7 +50,7 @@ class BaseDialog<P: Props, S: State> extends AbstractDialog<P, S> {
      * @returns {ReactElement}
      */
     render() {
-        const { _dialogStyles, style, t, titleKey } = this.props;
+        const { _dialogStyles, style } = this.props;
 
         return (
             <TouchableWithoutFeedback>
@@ -65,18 +65,13 @@ class BaseDialog<P: Props, S: State> extends AbstractDialog<P, S> {
                             _dialogStyles.dialog,
                             style
                         ] }>
-                        <View style = { styles.headerWrapper }>
-                            <Text style = { styles.dialogTitle }>
-                                { titleKey ? t(titleKey) : ' ' }
-                            </Text>
-                            <TouchableOpacity
-                                onPress = { this._onCancel }
-                                style = { styles.closeWrapper }>
-                                <Icon
-                                    src = { IconClose }
-                                    style = { _dialogStyles.closeStyle } />
-                            </TouchableOpacity>
-                        </View>
+                        <TouchableOpacity
+                            onPress = { this._onCancel }
+                            style = { styles.closeWrapper }>
+                            <Icon
+                                src = { IconClose }
+                                style = { _dialogStyles.closeStyle } />
+                        </TouchableOpacity>
                         { this._renderContent() }
                     </View>
                 </KeyboardAvoidingView>
@@ -93,7 +88,7 @@ class BaseDialog<P: Props, S: State> extends AbstractDialog<P, S> {
      *
      * @returns {ReactElement}
      */
-    _renderContent: () => Object;
+    _renderContent: () => Object
 
     /**
      * Renders a specific {@code string} which may contain HTML.

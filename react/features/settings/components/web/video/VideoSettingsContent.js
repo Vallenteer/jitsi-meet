@@ -6,6 +6,11 @@ import { translate } from '../../../../base/i18n';
 import Video from '../../../../base/media/components/Video';
 import { equals } from '../../../../base/redux';
 import { createLocalVideoTracks } from '../../../functions';
+import {
+    DeviceSelection,
+    getDeviceSelectionDialogProps,
+    submitDeviceSelectionTab
+} from '../../../../device-selection';
 
 
 const videoClassName = 'video-preview-video flipVideoX';
@@ -56,11 +61,10 @@ type State = {
  * Implements a React {@link Component} which displays a list of video
  * previews to choose from.
  *
- * @augments Component
+ * @extends Component
  */
 class VideoSettingsContent extends Component<Props, State> {
     _componentWasUnmounted: boolean;
-    _videoContentRef: Object;
 
     /**
      * Initializes a new {@code VideoSettingsContent} instance.
@@ -70,29 +74,12 @@ class VideoSettingsContent extends Component<Props, State> {
      */
     constructor(props) {
         super(props);
-        this._onEscClick = this._onEscClick.bind(this);
-        this._videoContentRef = React.createRef();
 
         this.state = {
             trackData: new Array(props.videoDeviceIds.length).fill({
                 jitsiTrack: null
             })
         };
-    }
-    _onEscClick: (KeyboardEvent) => void;
-
-    /**
-     * Click handler for the video entries.
-     *
-     * @param {KeyboardEvent} event - Esc key click to close the popup.
-     * @returns {void}
-     */
-    _onEscClick(event) {
-        if (event.key === 'Escape') {
-            event.preventDefault();
-            event.stopPropagation();
-            this._videoContentRef.current.style.display = 'none';
-        }
     }
 
     /**
@@ -103,7 +90,9 @@ class VideoSettingsContent extends Component<Props, State> {
     async _setTracks() {
         this._disposeTracks(this.state.trackData);
 
-        const trackData = await createLocalVideoTracks(this.props.videoDeviceIds, 5000);
+        const trackData = await createLocalVideoTracks(
+            this.props.videoDeviceIds,
+        );
 
         // In case the component gets unmounted before the tracks are created
         // avoid a leak by not setting the state
@@ -138,6 +127,11 @@ class VideoSettingsContent extends Component<Props, State> {
         return () => {
             this.props.setVideoInputDevice(deviceId);
             this.props.toggleVideoSettings();
+            const state = {
+                selectedVideoInputId: deviceId
+            };
+
+            this.props.dispatch(submitDeviceSelectionTab(state));
         };
     }
 
@@ -154,14 +148,12 @@ class VideoSettingsContent extends Component<Props, State> {
         const isSelected = deviceId === currentCameraDeviceId;
         const key = `vp-${index}`;
         const className = 'video-preview-entry';
-        const tabIndex = '0';
 
         if (error) {
             return (
                 <div
                     className = { className }
-                    key = { key }
-                    tabIndex = { -1 } >
+                    key = { key }>
                     <div className = 'video-preview-error'>{t(error)}</div>
                 </div>
             );
@@ -169,39 +161,19 @@ class VideoSettingsContent extends Component<Props, State> {
 
         const props: Object = {
             className,
-            key,
-            tabIndex
+            key
         };
         const label = jitsiTrack && jitsiTrack.getTrackLabel();
 
         if (isSelected) {
-            props['aria-checked'] = true;
-            props.className = `${className} video-preview-entry--selected`;
+            props.className = `${className}`;
         } else {
             props.onClick = this._onEntryClick(deviceId);
-            props.onKeyPress = e => {
-                if (e.key === ' ' || e.key === 'Enter') {
-                    e.preventDefault();
-                    props.onClick();
-                }
-            };
         }
 
         return (
-            <div
-                { ...props }
-                role = 'radio'>
-                <div className = 'video-preview-label'>
-                    {label && <div className = 'video-preview-label-container'>
-                        <div className = 'video-preview-label-text'>
-                            <span>{label}</span></div>
-                    </div>}
-                </div>
-                <div className = 'video-preview-overlay' />
-                <Video
-                    className = { videoClassName }
-                    playsinline = { true }
-                    videoTrack = {{ jitsiTrack }} />
+            <div { ...props }>
+                <div className = 'video-preview-label'>{label}</div>                
             </div>
         );
     }
@@ -245,15 +217,10 @@ class VideoSettingsContent extends Component<Props, State> {
         const { trackData } = this.state;
 
         return (
-            <div
-                aria-labelledby = 'video-settings-button'
-                className = 'video-preview-container'
-                id = 'video-settings-dialog'
-                onKeyDown = { this._onEscClick }
-                ref = { this._videoContentRef }
-                role = 'radiogroup'
-                tabIndex = '-1'>
-                {trackData.map((data, i) => this._renderPreviewEntry(data, i))}
+            <div className = 'video-preview-container'>
+                <div className = 'video-preview'>
+                    {trackData.map((data, i) => this._renderPreviewEntry(data, i))}
+                </div>
             </div>
         );
     }

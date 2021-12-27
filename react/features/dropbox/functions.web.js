@@ -1,6 +1,12 @@
 // @flow
 
-import { Dropbox, DropboxAuth } from 'dropbox';
+import { Dropbox } from 'dropbox';
+
+import {
+    getJitsiMeetGlobalNS,
+    parseStandardURIString,
+    parseURLParams
+} from '../base/util';
 
 /**
  * Executes the oauth flow.
@@ -10,33 +16,19 @@ import { Dropbox, DropboxAuth } from 'dropbox';
  */
 function authorize(authUrl: string): Promise<string> {
     const windowName = `oauth${Date.now()}`;
+    const gloabalNS = getJitsiMeetGlobalNS();
+
+    gloabalNS.oauthCallbacks = gloabalNS.oauthCallbacks || {};
 
     return new Promise(resolve => {
-        // eslint-disable-next-line prefer-const
-        let popup;
-        const handleAuth = ({ data }) => {
-            if (data && data.type === 'dropbox-login' && data.windowName === windowName) {
-                if (popup) {
-                    popup.close();
-                }
-                window.removeEventListener('message', handleAuth);
-                resolve(data.url);
-            }
+        const popup = window.open(authUrl, windowName);
+
+        gloabalNS.oauthCallbacks[windowName] = url => {
+            popup.close();
+            delete gloabalNS.oauthCallbacks.windowName;
+            resolve(url);
         };
-
-        window.addEventListener('message', handleAuth);
-        popup = window.open(authUrl, windowName);
     });
-}
-
-/**
- * Returns the token's expiry date as UNIX timestamp.
- *
- * @param {number} expiresIn - The seconds in which the token expires.
- * @returns {number} - The timestamp value for the expiry date.
- */
-function getTokenExpiresAtTimestamp(expiresIn: number) {
-    return new Date(Date.now() + (expiresIn * 1000)).getTime();
 }
 
 /**
@@ -44,52 +36,21 @@ function getTokenExpiresAtTimestamp(expiresIn: number) {
  *
  * @param {string} appKey - The Jitsi Recorder dropbox app key.
  * @param {string} redirectURI - The return URL.
- * @returns {Promise<Object>}
+ * @returns {Promise<string>}
  */
 export function _authorizeDropbox(
         appKey: string,
         redirectURI: string
-): Promise<Object> {
-    const dropbox = new DropboxAuth({ clientId: appKey });
+): Promise<string> {
+    const dropboxAPI = new Dropbox({ clientId: appKey });
+    const url = dropboxAPI.getAuthenticationUrl(redirectURI);
 
-    return dropbox.getAuthenticationUrl(redirectURI, undefined, 'code', 'offline', undefined, undefined, true)
-        .then(authorize)
-        .then(returnUrl => {
-            const params = new URLSearchParams(new URL(returnUrl).search);
-            const code = params.get('code');
+    return authorize(url).then(returnUrl => {
+        const params
+            = parseURLParams(parseStandardURIString(returnUrl), true) || {};
 
-            return dropbox.getAccessTokenFromCode(redirectURI, code);
-        })
-        .then(resp => {
-            return {
-                token: resp.result.access_token,
-                rToken: resp.result.refresh_token,
-                expireDate: getTokenExpiresAtTimestamp(resp.result.expires_in)
-            };
-        });
-}
-
-
-/**
- * Gets a new acccess token based on the refresh token.
- *
- * @param {string} appKey - The dropbox appKey.
- * @param {string} rToken - The refresh token.
- * @returns {Promise}
- */
-export function getNewAccessToken(appKey: string, rToken: string) {
-    const dropbox = new DropboxAuth({ clientId: appKey });
-
-    dropbox.setRefreshToken(rToken);
-
-    return dropbox.refreshAccessToken()
-        .then(() => {
-            return {
-                token: dropbox.getAccessToken(),
-                rToken: dropbox.getRefreshToken(),
-                expireDate: dropbox.getAccessTokenExpiresAt().getTime()
-            };
-        });
+        return params.access_token;
+    });
 }
 
 /**
@@ -107,7 +68,7 @@ export function getDisplayName(token: string, appKey: string) {
 
     return (
         dropboxAPI.usersGetCurrentAccount()
-            .then(account => account.result.name.display_name));
+            .then(account => account.name.display_name));
 }
 
 /**
@@ -124,7 +85,7 @@ export function getSpaceUsage(token: string, appKey: string) {
     });
 
     return dropboxAPI.usersGetSpaceUsage().then(space => {
-        const { allocation, used } = space.result;
+        const { allocation, used } = space;
         const { allocated } = allocation;
 
         return {

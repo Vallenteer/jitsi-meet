@@ -1,7 +1,5 @@
 // @flow
 
-import { MODERATION_NOTIFICATIONS } from '../av-moderation/constants';
-import { MEDIA_TYPE } from '../base/media';
 import { toState } from '../base/redux';
 
 declare var interfaceConfig: Object;
@@ -21,25 +19,10 @@ export function areThereNotifications(stateful: Object | Function) {
 }
 
 /**
- * Tells whether join/leave notifications are enabled in interface_config.
+ * Tells wether join/leave notifications are enabled in interface_config.
  *
  * @returns {boolean}
  */
 export function joinLeaveNotificationsDisabled() {
     return Boolean(typeof interfaceConfig !== 'undefined' && interfaceConfig?.DISABLE_JOIN_LEAVE_NOTIFICATIONS);
-}
-
-/**
- * Returns whether or not the moderation notification for the given type is displayed.
- *
- * @param {MEDIA_TYPE} mediaType - The media type to check.
- * @param {Object | Function} stateful - The redux store state.
- * @returns {boolean}
- */
-export function isModerationNotificationDisplayed(mediaType: MEDIA_TYPE, stateful: Object | Function) {
-    const state = toState(stateful);
-
-    const { notifications } = state['features/notifications'];
-
-    return Boolean(notifications.find(n => n.uid === MODERATION_NOTIFICATIONS[mediaType]));
 }

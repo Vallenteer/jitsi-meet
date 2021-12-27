@@ -6,7 +6,7 @@
 export const SET_NETWORK_INFO = 'SET_NETWORK_INFO';
 
 /**
- * The action dispatched by 'base/net-info' middleware in order to store the cleanup function for later use.
+ * Tha action dispatched by 'base/net-info' middleware in order to store the cleanup function for later use.
  * @type {string}
  * @private
  */

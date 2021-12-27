@@ -13,12 +13,9 @@ const JitsiConnectionErrors = JitsiMeetJS.errors.connection;
  * @param {string} type - The media type of track being created. Expected values
  * are "video" or "audio".
  * @param {string} deviceId - The id of the target media source.
- * @param {number} [timeout] - A timeout for the JitsiMeetJS.createLocalTracks function call.
- * @param {Object} additionalOptions - Extra options to be passed to lib-jitsi-meet's {@code createLocalTracks}.
- *
  * @returns {Promise<JitsiLocalTrack>}
  */
-export function createLocalTrack(type: string, deviceId: string, timeout: ?number, additionalOptions: ?Object) {
+export function createLocalTrack(type: string, deviceId: string) {
     return (
         JitsiMeetJS.createLocalTracks({
             cameraDeviceId: deviceId,
@@ -27,9 +24,7 @@ export function createLocalTrack(type: string, deviceId: string, timeout: ?numbe
             // eslint-disable-next-line camelcase
             firefox_fake_device:
                 window.config && window.config.firefox_fake_device,
-            micDeviceId: deviceId,
-            timeout,
-            ...additionalOptions
+            micDeviceId: deviceId
         })
             .then(([ jitsiLocalTrack ]) => jitsiLocalTrack));
 }

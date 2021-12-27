@@ -51,7 +51,7 @@ type Props = {
  * React {@code Component} for displaying the current presence status of a
  * participant.
  *
- * @augments Component
+ * @extends Component
  */
 class PresenceLabel extends Component<Props> {
     /**

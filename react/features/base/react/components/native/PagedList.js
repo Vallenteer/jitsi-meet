@@ -63,7 +63,7 @@ type State = {
 /**
  * A component that renders a paged list.
  *
- * @augments PagedList
+ * @extends PagedList
  */
 class PagedList extends Component<Props, State> {
 

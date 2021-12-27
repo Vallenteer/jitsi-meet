@@ -21,12 +21,13 @@ import {
 } from '../../../base/react';
 import { connect } from '../../../base/redux';
 import { ColorPalette, StyleType } from '../../../base/styles';
+import { isVpaasMeeting } from '../../../billing-counter/functions';
 import { authorizeDropbox, updateDropboxToken } from '../../../dropbox';
-import { isVpaasMeeting } from '../../../jaas/functions';
 import { RECORDING_TYPES } from '../../constants';
 import { getRecordingDurationEstimation } from '../../functions';
 
-import { DROPBOX_LOGO, ICON_CLOUD, JITSI_LOGO } from './styles';
+import { DROPBOX_LOGO, ICON_SHARE, JITSI_LOGO } from './styles';
+
 
 type Props = {
 
@@ -52,7 +53,7 @@ type Props = {
     fileRecordingsServiceEnabled: boolean,
 
     /**
-     * Whether to show the possibility to share file recording with other people (e.g. Meeting participants), based on
+     * Whether to show the possibility to share file recording with other people (e.g. meeting participants), based on
      * the actual implementation on the backend.
      */
     fileRecordingsServiceSharingEnabled: boolean,
@@ -117,7 +118,7 @@ type Props = {
 /**
  * React Component for getting confirmation to start a file recording session.
  *
- * @augments Component
+ * @extends Component
  */
 class StartRecordingDialogContent extends Component<Props> {
     /**
@@ -133,6 +134,7 @@ class StartRecordingDialogContent extends Component<Props> {
         this._onSignOut = this._onSignOut.bind(this);
         this._onDropboxSwitchChange = this._onDropboxSwitchChange.bind(this);
         this._onRecordingServiceSwitchChange = this._onRecordingServiceSwitchChange.bind(this);
+
     }
 
     /**
@@ -161,11 +163,7 @@ class StartRecordingDialogContent extends Component<Props> {
      * @returns {React$Component}
      */
     _renderFileSharingContent() {
-        const { fileRecordingsServiceSharingEnabled, isVpaas, selectedRecordingService } = this.props;
-
-        if (!fileRecordingsServiceSharingEnabled
-            || isVpaas
-            || selectedRecordingService !== RECORDING_TYPES.JITSI_REC_SERVICE) {
+        if (!this.props.fileRecordingsServiceSharingEnabled) {
             return null;
         }
 
@@ -174,22 +172,31 @@ class StartRecordingDialogContent extends Component<Props> {
             _styles: styles,
             isValidating,
             onSharingSettingChanged,
+            selectedRecordingService,
             sharingSetting,
             t
         } = this.props;
 
+        const controlDisabled = selectedRecordingService !== RECORDING_TYPES.JITSI_REC_SERVICE;
+        let mainContainerClasses = 'recording-header recording-header-line';
+
+        if (controlDisabled) {
+            mainContainerClasses += ' recording-switch-disabled';
+        }
+
         return (
             <Container
-                className = 'recording-header'
+                className = { mainContainerClasses }
                 key = 'fileSharingSetting'
                 style = { [
                     styles.header,
-                    _dialogStyles.topBorderContainer
+                    _dialogStyles.topBorderContainer,
+                    controlDisabled ? styles.controlDisabled : null
                 ] }>
                 <Container className = 'recording-icon-container'>
                     <Image
                         className = 'recording-icon'
-                        src = { ICON_CLOUD }
+                        src = { ICON_SHARE }
                         style = { styles.recordingIcon } />
                 </Container>
                 <Text
@@ -202,12 +209,12 @@ class StartRecordingDialogContent extends Component<Props> {
                 </Text>
                 <Switch
                     className = 'recording-switch'
-                    disabled = { isValidating }
+                    disabled = { controlDisabled || isValidating }
                     onValueChange
                         = { onSharingSettingChanged }
                     style = { styles.switch }
                     trackColor = {{ false: ColorPalette.lightGrey }}
-                    value = { sharingSetting } />
+                    value = { !controlDisabled && sharingSetting } />
             </Container>
         );
     }
@@ -240,27 +247,50 @@ class StartRecordingDialogContent extends Component<Props> {
                         value = { this.props.selectedRecordingService === RECORDING_TYPES.JITSI_REC_SERVICE } />
                 ) : null;
 
-        const icon = isVpaas ? ICON_CLOUD : JITSI_LOGO;
-        const label = isVpaas ? t('recording.serviceDescriptionCloud') : t('recording.serviceDescription');
-
+        const icon = isVpaas ? ICON_SHARE : JITSI_LOGO;
         return (
             <Container
                 className = 'recording-header'
                 key = 'noIntegrationSetting'
                 style = { styles.header }>
-                <Container className = 'recording-icon-container'>
-                    <Image
-                        className = 'recording-icon'
-                        src = { icon }
-                        style = { styles.recordingIcon } />
-                </Container>
+                <div>
+                    <label className = 'checkbox' for="audio-only">
+                        { t('videoapi.recording.audioOnly') }
+                        <input
+                            type = { 'radio' }
+                            id = 'audio-only'
+                            checked = { true }
+                            name = 'recordingMode'
+                            // eslint-disable-next-line react/jsx-no-bind
+                            onChange = { (e) => {
+                                this.props.onRecordingModeChanged(e.target.value ? 'audio-only' : 'audio-video');
+                            }
+
+                            } />
+                    </label>
+                </div>
+                <div>
+                    <label className = 'checkbox' for="audio-video">
+                        { t('videoapi.recording.audioVideo') }
+                        <input
+                            type = { 'radio' }
+                            id = 'audio-video'
+                            name = 'recordingMode'
+                            // eslint-disable-next-line react/jsx-no-bind
+                            onChange = { (e) => {
+                                this.props.onRecordingModeChanged(e.target.value ? 'audio-video' : 'audio-only');
+                            }
+
+                            } />
+                    </label>
+                </div>
                 <Text
                     className = 'recording-title'
                     style = {{
                         ..._dialogStyles.text,
                         ...styles.title
                     }}>
-                    { label }
+                    { t('recording.serviceDescription') }
                 </Text>
                 { switchContent }
             </Container>
@@ -326,7 +356,7 @@ class StartRecordingDialogContent extends Component<Props> {
         return (
             <Container>
                 <Container
-                    className = 'recording-header recording-header-line'
+                    className = 'recording-header'
                     style = { styles.header }>
                     <Container
                         className = 'recording-icon-container'>

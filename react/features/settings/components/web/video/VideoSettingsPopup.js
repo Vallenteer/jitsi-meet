@@ -8,7 +8,6 @@ import {
     setVideoInputDeviceAndUpdateSettings
 } from '../../../../base/devices';
 import { connect } from '../../../../base/redux';
-import { SMALL_MOBILE_WIDTH } from '../../../../base/responsive-ui/constants';
 import { getCurrentCameraDeviceId } from '../../../../base/settings';
 import { toggleVideoSettings } from '../../../actions';
 import { getVideoSettingsVisibility } from '../../../functions';
@@ -32,11 +31,6 @@ type Props = VideoSettingsProps & {
     * Callback executed when the popup closes.
     */
     onClose: Function,
-
-    /**
-     * The popup placement enum value.
-     */
-     popupPlacement: string
 }
 
 /**
@@ -49,7 +43,6 @@ function VideoSettingsPopup({
     children,
     isOpen,
     onClose,
-    popupPlacement,
     setVideoInputDevice,
     videoDeviceIds
 }: Props) {
@@ -63,7 +56,7 @@ function VideoSettingsPopup({
                     videoDeviceIds = { videoDeviceIds } /> }
                 isOpen = { isOpen }
                 onClose = { onClose }
-                placement = { popupPlacement }>
+                position = 'top right'>
                 { children }
             </InlineDialog>
         </div>
@@ -78,12 +71,9 @@ function VideoSettingsPopup({
  * @returns {Object}
  */
 function mapStateToProps(state) {
-    const { clientWidth } = state['features/base/responsive-ui'];
-
     return {
         currentCameraDeviceId: getCurrentCameraDeviceId(state),
         isOpen: getVideoSettingsVisibility(state),
-        popupPlacement: clientWidth <= SMALL_MOBILE_WIDTH ? 'auto' : 'top-start',
         videoDeviceIds: getVideoDeviceIds(state)
     };
 }

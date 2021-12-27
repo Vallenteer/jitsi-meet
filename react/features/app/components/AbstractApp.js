@@ -59,6 +59,16 @@ export class AbstractApp extends BaseApp<Props, *> {
         const previousTimestamp = prevProps.timestamp;
         const currentTimestamp = this.props.timestamp;
 
+        if (navigator.product === 'ReactNative') {
+            const now = Date.now();
+            const lastExit = global.lastExit || 0;
+
+            if (lastExit < now && (now - lastExit) < 5000) {
+                console.log("Blocked for reinitializing after leaving the conference");
+
+                return; // ignore reentry
+            }
+        }
         this._init.then(() => {
             // Deal with URL changes.
 
@@ -73,7 +83,7 @@ export class AbstractApp extends BaseApp<Props, *> {
     }
 
     /**
-     * Creates an extra {@link ReactElement}s to be added (unconditionally)
+     * Creates an extra {@link ReactElement}s to be added (unconditionaly)
      * alongside the main element.
      *
      * @abstract

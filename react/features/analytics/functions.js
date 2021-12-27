@@ -11,7 +11,7 @@ import JitsiMeetJS, {
     browser,
     isAnalyticsEnabled
 } from '../base/lib-jitsi-meet';
-import { getJitsiMeetGlobalNS, loadScript, parseURIString } from '../base/util';
+import { getJitsiMeetGlobalNS, loadScript } from '../base/util';
 
 import { AmplitudeHandler, MatomoHandler } from './handlers';
 import logger from './logger';
@@ -166,8 +166,6 @@ export function initAnalytics({ getState }: { getState: Function }, handlers: Ar
     } = config;
     const { group, server } = state['features/base/jwt'];
     const roomName = state['features/base/conference'].room;
-    const { locationURL = {} } = state['features/base/connection'];
-    const { tenant } = parseURIString(locationURL.href) || {};
     const permanentProperties = {};
 
     if (server) {
@@ -181,16 +179,13 @@ export function initAnalytics({ getState }: { getState: Function }, handlers: Ar
     permanentProperties.appName = getAppName();
 
     // Report if user is using websocket
-    permanentProperties.websocket = typeof config.websocket === 'string';
+    permanentProperties.websocket = navigator.product !== 'ReactNative' && typeof config.websocket === 'string';
 
     // Report if user is using the external API
     permanentProperties.externalApi = typeof API_ID === 'number';
 
     // Report if we are loaded in iframe
-    permanentProperties.inIframe = inIframe();
-
-    // Report the tenant from the URL.
-    permanentProperties.tenant = tenant || '/';
+    permanentProperties.inIframe = _inIframe();
 
     // Optionally, include local deployment information based on the
     // contents of window.config.deploymentInfo.
@@ -227,7 +222,7 @@ export function initAnalytics({ getState }: { getState: Function }, handlers: Ar
  * @returns {boolean} Returns {@code true} if loaded in iframe.
  * @private
  */
-export function inIframe() {
+function _inIframe() {
     if (navigator.product === 'ReactNative') {
         return false;
     }

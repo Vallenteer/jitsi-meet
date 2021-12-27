@@ -59,9 +59,6 @@ export default class JitsiStreamPresenterEffect {
         this._videoElement.autoplay = true;
         this._videoElement.srcObject = videoStream;
 
-        // autoplay is not enough to start the video on Safari, it's fine to call play() on other platforms as well
-        this._videoElement.play();
-
         // set the style attribute of the div to make it invisible
         videoDiv.style.display = 'none';
 
@@ -92,19 +89,22 @@ export default class JitsiStreamPresenterEffect {
         // adjust the canvas width/height on every frame incase the window has been resized.
         const [ track ] = this._desktopStream.getVideoTracks();
         const { height, width } = track.getSettings() ?? track.getConstraints();
-
+        const additionalSize = 40;
         this._canvas.width = parseInt(width, 10);
         this._canvas.height = parseInt(height, 10);
-        this._ctx.drawImage(this._desktopElement, 0, 0, this._canvas.width, this._canvas.height);
-        this._ctx.drawImage(this._videoElement, this._canvas.width - this._videoElement.width, this._canvas.height
-            - this._videoElement.height, this._videoElement.width, this._videoElement.height);
+        const x = this._canvas.width - this._videoElement.width + additionalSize;
+        const y = this._canvas.height - this._videoElement.height + additionalSize;
+        const w = this._videoElement.width - additionalSize - 5;
+        const h = this._videoElement.height - additionalSize;
 
+        this._ctx.drawImage(this._desktopElement, 0, 0, this._canvas.width, this._canvas.height);
+        this._ctx.drawImage(this._videoElement, x, y, w, h);
         // draw a border around the video element.
         this._ctx.beginPath();
         this._ctx.lineWidth = 2;
         this._ctx.strokeStyle = '#A9A9A9'; // dark grey
-        this._ctx.rect(this._canvas.width - this._videoElement.width, this._canvas.height - this._videoElement.height,
-            this._videoElement.width, this._videoElement.height);
+        this._ctx.rect(x, y, w, h);
+        
         this._ctx.stroke();
     }
 
@@ -135,10 +135,6 @@ export default class JitsiStreamPresenterEffect {
         this._desktopElement.height = parseInt(height, 10);
         this._desktopElement.autoplay = true;
         this._desktopElement.srcObject = desktopStream;
-
-        // autoplay is not enough to start the video on Safari, it's fine to call play() on other platforms as well
-        this._desktopElement.play();
-
         this._canvas.width = parseInt(width, 10);
         this._canvas.height = parseInt(height, 10);
         this._videoFrameTimerWorker = new Worker(timerWorkerScript, { name: 'Presenter effect worker' });

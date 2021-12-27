@@ -53,12 +53,10 @@
         "noMessagesMessage": "Kirjavahetust pole veel alustatud. Alusta kirjavahetust siin!",
         "nickname": {
             "popover": "Sisesta nimi",
-            "title": "Sisesta nimi, et kõnega alustada",
-            "titleWithPolls": "Sisesta nimi, et kõnega alustada"
+            "title": "Sisesta nimi, et kõnega alustada"
         },
         "privateNotice": "Privaatsõnum kasutajale {{recipient}}",
         "title": "Kõne",
-        "titleWithPolls": "Kõne",
         "you": "you"
     },
     "chromeExtensionBanner": {
@@ -373,11 +371,11 @@
         "busyTitle": "Kõik ülekandjad on hetkel hõivatud",
         "changeSignIn": "Vaheta kontot.",
         "choose": "Vali otseülekanne",
-        "chooseCTA": "Vali ülekande viis. Oled sisse logitud emailiga {{email}}.",
+        "chooseCTA": "Vali ülekande viis. Oled sisse logitud e-mailiga {{email}}.",
         "enterStreamKey": "Sisesta siia oma YouTube’i ülekande võti.",
         "error": "Otseülekanne ebaõnnestus. Proovi uuesti.",
         "errorAPI": "YouTube’i kanaliga ühendumisel tekkis viga. Palun logi uuesti sisse.",
-        "errorLiveStreamNotEnabled": "Otseülekanne ei ole emailiga {{email}} sisse lülitatud. Luba kasutajaga otseülekanded või vaheta kontot.",
+        "errorLiveStreamNotEnabled": "Otseülekanne ei ole e-mailiga {{email}} sisse lülitatud. Luba kasutajaga otseülekanded või vaheta kontot.",
         "expandedOff": "Otseülekanne on peatatud",
         "expandedOn": "Kõnest tehakse otseülekanne YouTube’i.",
         "expandedPending": "Otseülekanne algab…",
@@ -480,7 +478,7 @@
     },
     "profile": {
         "setDisplayNameLabel": "Sisesta nimi",
-        "setEmailInput": "Sisesta email",
+        "setEmailInput": "Sisesta e-mail",
         "setEmailLabel": "Sisesta Gravatar e-kirja aadress",
         "title": "Profiil"
     },
@@ -548,7 +546,7 @@
         "disableCallIntegration": "Lülita kohaliku kõne integratsioon välja",
         "disableP2P": "Lülita otseühendus välja",
         "displayName": "Kasutatav nimi",
-        "email": "Email",
+        "email": "E-mail",
         "header": "Seaded",
         "profileSection": "Profiil",
         "serverURL": "Serveri link",

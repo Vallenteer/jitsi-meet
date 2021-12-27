@@ -1,5 +1,6 @@
 local speakerstats_component
-    = module:get_option_string("speakerstats_component", "speakerstats."..module.host);
+    = module:get_option_string(
+        "speakerstats_component", "speakerstats"..module.host);
 
 -- Advertise speaker stats so client can pick up the address and start sending
 -- dominant speaker events

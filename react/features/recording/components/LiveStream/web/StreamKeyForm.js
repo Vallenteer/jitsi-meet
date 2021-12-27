@@ -12,7 +12,7 @@ import { GOOGLE_PRIVACY_POLICY, YOUTUBE_TERMS_URL } from '../constants';
 /**
  * A React Component for entering a key for starting a YouTube live stream.
  *
- * @augments Component
+ * @extends Component
  */
 class StreamKeyForm extends AbstractStreamKeyForm<Props> {
 
@@ -27,7 +27,6 @@ class StreamKeyForm extends AbstractStreamKeyForm<Props> {
 
         // Bind event handlers so they are only bound once per instance.
         this._onOpenHelp = this._onOpenHelp.bind(this);
-        this._onOpenHelpKeyPress = this._onOpenHelpKeyPress.bind(this);
     }
 
     /**
@@ -64,12 +63,8 @@ class StreamKeyForm extends AbstractStreamKeyForm<Props> {
                         }
                         { this.helpURL
                             ? <a
-                                aria-label = { t('liveStreaming.streamIdHelp') }
                                 className = 'helper-link'
-                                onClick = { this._onOpenHelp }
-                                onKeyPress = { this._onOpenHelpKeyPress }
-                                role = 'link'
-                                tabIndex = { 0 }>
+                                onClick = { this._onOpenHelp }>
                                 { t('liveStreaming.streamIdHelp') }
                             </a>
                             : null
@@ -94,9 +89,9 @@ class StreamKeyForm extends AbstractStreamKeyForm<Props> {
         );
     }
 
-    _onInputChange: Object => void;
+    _onInputChange: Object => void
 
-    _onOpenHelp: () => void;
+    _onOpenHelp: () => void
 
     /**
      * Opens a new tab with information on how to manually locate a YouTube
@@ -107,24 +102,6 @@ class StreamKeyForm extends AbstractStreamKeyForm<Props> {
      */
     _onOpenHelp() {
         window.open(this.helpURL, '_blank', 'noopener');
-    }
-
-    _onOpenHelpKeyPress: () => void;
-
-    /**
-     * Opens a new tab with information on how to manually locate a YouTube
-     * broadcast stream key.
-     *
-     * @param {Object} e - The key event to handle.
-     *
-     * @private
-     * @returns {void}
-     */
-    _onOpenHelpKeyPress(e) {
-        if (e.key === ' ') {
-            e.preventDefault();
-            this._onOpenHelp();
-        }
     }
 }
 

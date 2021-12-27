@@ -49,11 +49,9 @@
         "messagebox": "",
         "nickname": {
             "popover": "Odaberite nadimak",
-            "title": "Unesite nadimak za čavrljanje",
-            "titleWithPolls": "Unesite nadimak za čavrljanje"
+            "title": "Unesite nadimak za čavrljanje"
         },
-        "title": "Čavrljanje",
-        "titleWithPolls": "Čavrljanje"
+        "title": "Čavrljanje"
     },
     "connectingOverlay": {
         "joiningRoom": ""

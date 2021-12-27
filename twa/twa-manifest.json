@@ -13,15 +13,15 @@
   "enableNotifications": false,
   "startUrl": "/",
   "iconUrl": "https://meet.jit.si/static/pwa/icons/icon512.png",
+  "maskableIconUrl": "https://meet.jit.si/static/pwa/icons/iconMask.png",
   "splashScreenFadeOutDuration": 300,
-  "appVersionName": "1.0.0",
-  "appVersionCode": 2000000000,
-  "shortcuts": [],
+  "appVersionName": "20.5.0",
+  "appVersionCode": 1,
   "generatorApp": "bubblewrap-cli",
-  "webManifestUrl": "https://meet.jit.si/manifest.json",
+  "webManifestUrl": "https://meet.jit.si/static/pwa/manifest.json",
   "fallbackType": "customtabs",
   "features": {},
   "enableSiteSettingsShortcut": true,
   "isChromeOSOnly": true,
-  "appVersion": "1.0.0"
+  "appVersion": "20.5.0"
 }

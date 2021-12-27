@@ -7,7 +7,7 @@ import { ColorPalette, getRGBAFormat } from '../styles';
  */
 export default {
     '_defaultTheme': {
-        // Generic app theme colors that are used across the entire app.
+        // Generic app theme colors that are used accross the entire app.
         // All scheme definitions below inherit these values.
         background: 'rgb(255, 255, 255)',
         errorText: ColorPalette.red,
@@ -41,17 +41,20 @@ export default {
     },
     'Modal': {},
     'LargeVideo': {
-        background: '#040404'
+        background: 'rgb(0,0,0)'
+    },
+    'LoadConfigOverlay': {
+        background: 'rgb(249, 249, 249)'
     },
     'Thumbnail': {
         activeParticipantHighlight: 'rgb(81, 214, 170)',
         activeParticipantTint: 'rgba(49, 183, 106, 0.3)',
-        background: '#36383C'
+        background: 'rgb(94, 109, 122)'
     },
     'Toolbox': {
         button: 'rgb(255, 255, 255)',
         buttonToggled: 'rgb(38, 58, 76)',
         buttonToggledBorder: getRGBAFormat('#a4b8d1', 0.6),
-        hangup: 'rgb(227,79,86)'
+        hangup: 'rgb(225, 45, 45)'
     }
 };

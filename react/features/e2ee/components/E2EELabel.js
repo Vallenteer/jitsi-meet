@@ -1,13 +1,12 @@
 // @flow
 
+import Tooltip from '@atlaskit/tooltip';
 import React, { Component } from 'react';
 
 import { translate } from '../../base/i18n';
 import { IconE2EE } from '../../base/icons';
-import { Label } from '../../base/label';
-import { COLORS } from '../../base/label/constants';
+import { CircularLabel } from '../../base/label';
 import { connect } from '../../base/redux';
-import { Tooltip } from '../../base/tooltip';
 
 import { _mapStateToProps, type Props } from './AbstractE2EELabel';
 
@@ -15,7 +14,7 @@ import { _mapStateToProps, type Props } from './AbstractE2EELabel';
 /**
  * React {@code Component} for displaying a label when everyone has E2EE enabled in a conferene.
  *
- * @augments Component
+ * @extends Component
  */
 class E2EELabel extends Component<Props> {
 
@@ -29,15 +28,13 @@ class E2EELabel extends Component<Props> {
         if (!this.props._showLabel) {
             return null;
         }
-        const { _e2eeLabels, t } = this.props;
-        const content = _e2eeLabels?.labelToolTip || t('e2ee.labelToolTip');
 
         return (
             <Tooltip
-                content = { content }
-                position = { 'bottom' }>
-                <Label
-                    color = { COLORS.green }
+                content = { this.props.t('e2ee.labelToolTip') }
+                position = { 'left' }>
+                <CircularLabel
+                    className = 'e2ee'
                     icon = { IconE2EE } />
             </Tooltip>
         );

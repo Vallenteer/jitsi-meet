@@ -3,7 +3,7 @@
 import React, { Component } from 'react';
 
 import { translate } from '../../base/i18n';
-import { Label } from '../../base/label';
+import { CircularLabel } from '../../base/label';
 import { connect } from '../../base/redux';
 
 import { _mapStateToProps, type Props } from './AbstractTranscribingLabel';
@@ -12,7 +12,7 @@ import { _mapStateToProps, type Props } from './AbstractTranscribingLabel';
  * React {@code Component} for displaying a label when a transcriber is in the
  * conference.
  *
- * @augments Component
+ * @extends Component
  */
 class TranscribingLabel extends Component<Props> {
 
@@ -26,7 +26,10 @@ class TranscribingLabel extends Component<Props> {
             return null;
         }
 
-        return <Label text = { this.props.t('transcribing.tr') } />;
+        return (
+            <CircularLabel
+                label = { this.props.t('transcribing.tr') } />
+        );
     }
 }
 

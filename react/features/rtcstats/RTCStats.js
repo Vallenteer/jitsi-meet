@@ -1,5 +1,5 @@
-import rtcstatsInit from '@jitsi/rtcstats/rtcstats';
-import traceInit from '@jitsi/rtcstats/trace-ws';
+import rtcstatsInit from 'rtcstats/rtcstats';
+import traceInit from 'rtcstats/trace-ws';
 
 import {
     createRTCStatsTraceCloseEvent,
@@ -37,30 +37,14 @@ class RTCStats {
      * loaded before it does.
      *
      * @param {Object} options -.
-     * @param {string} options.endpoint - The Amplitude app key required.
-     * @param {string} options.useLegacy - Switch to legacy chrome webrtc statistics. Parameter will only have
-     * an effect on chrome based applications.
-     * @param {number} options.pollInterval - The getstats poll interval in ms.
+     * @param {string} options.rtcstatsEndpoint - The Amplitude app key required.
+     * @param {number} options.rtcstatsPollInterval - The getstats poll interval in ms.
      * @returns {void}
      */
     init(options) {
-
-        const { endpoint, useLegacy, pollInterval } = options;
-
-        const traceOptions = {
-            endpoint,
-            onCloseCallback: this.handleTraceWSClose.bind(this),
-            useLegacy
-        };
-
-        const rtcstatsOptions = {
-            connectionFilter,
-            pollInterval,
-            useLegacy
-        };
-
-        this.trace = traceInit(traceOptions);
-        rtcstatsInit(this.trace, rtcstatsOptions);
+        this.handleTraceWSClose = this.handleTraceWSClose.bind(this);
+        this.trace = traceInit(options.rtcstatsEndpoint, this.handleTraceWSClose);
+        rtcstatsInit(this.trace, options.rtcstatsPollInterval, [ '' ], connectionFilter);
         this.initialized = true;
     }
 
@@ -82,27 +66,7 @@ class RTCStats {
      * @returns {void}
      */
     sendIdentityData(identityData) {
-        this.trace && this.trace.identity('identity', null, identityData);
-    }
-
-    /**
-     * Send dominant speaker data, the data will be processed by rtcstats-server and saved in the dump file.
-     *
-     * @param {Object} dominantSpeakerData - Dominant speaker data to be saved in the rtcstats dump.
-     * @returns {void}
-     */
-    sendDominantSpeakerData(dominantSpeakerData) {
-        this.trace && this.trace.statsEntry('dominantSpeaker', null, dominantSpeakerData);
-    }
-
-    /**
-     * Send facial expression data, the data will be processed by rtcstats-server and saved in the dump file.
-     *
-     * @param {Object} facialExpressionData - Facial expression data to be saved in the rtcstats dump.
-     * @returns {void}
-     */
-    sendFacialExpressionData(facialExpressionData) {
-        this.trace && this.trace.statsEntry('facialExpression', null, facialExpressionData);
+        this.trace && this.trace('identity', null, identityData);
     }
 
     /**

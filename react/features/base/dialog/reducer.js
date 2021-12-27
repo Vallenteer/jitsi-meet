@@ -20,6 +20,7 @@ ReducerRegistry.register('features/base/dialog', (state = {}, action) => {
 
         if (typeof component === 'undefined' || state.component === component) {
             return assign(state, {
+                lastComponent: state.component,
                 component: undefined,
                 componentProps: undefined,
                 rawDialog: false

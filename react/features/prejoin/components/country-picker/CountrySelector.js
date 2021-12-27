@@ -1,6 +1,6 @@
 // @flow
 
-import React, { useCallback } from 'react';
+import React from 'react';
 
 import { Icon, IconArrowDown } from '../../../base/icons';
 
@@ -23,18 +23,10 @@ type Props = {
  * @returns {ReactElement}
  */
 function CountrySelector({ country: { code, dialCode }, onClick }: Props) {
-    const onKeyPressHandler = useCallback(e => {
-        if (onClick && (e.key === ' ' || e.key === 'Enter')) {
-            e.preventDefault();
-            onClick();
-        }
-    }, [ onClick ]);
-
     return (
         <div
             className = 'cpick-selector'
-            onClick = { onClick }
-            onKeyPress = { onKeyPressHandler }>
+            onClick = { onClick }>
             <div className = { `prejoin-dialog-flag iti-flag ${code}` } />
             <span>{`+${dialCode}`}</span>
             <Icon

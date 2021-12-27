@@ -1,10 +1,7 @@
 /* @flow */
 
-import { withStyles } from '@material-ui/styles';
 import React, { Component } from 'react';
 
-import { isMobileBrowser } from '../../../features/base/environment/utils';
-import ContextMenu from '../../base/components/context-menu/ContextMenu';
 import { translate } from '../../base/i18n';
 
 /**
@@ -23,7 +20,7 @@ type Props = {
      * {{
      *     download: Number,
      *     upload: Number
-     * }}.
+     * }}
      */
     bandwidth: Object,
 
@@ -32,7 +29,7 @@ type Props = {
      * {{
      *     download: Number,
      *     upload: Number
-     * }}.
+     * }}
      */
     bitrate: Object,
 
@@ -41,11 +38,6 @@ type Props = {
      * conference.
      */
     bridgeCount: number,
-
-    /**
-     * An object containing the CSS classes.
-     */
-    classes: Object,
 
     /**
      * Audio/video codecs in use for the connection.
@@ -63,16 +55,6 @@ type Props = {
     e2eRtt: number,
 
     /**
-     * Whether or not should display the "Save Logs" link.
-     */
-    enableSaveLogs: boolean,
-
-    /**
-     * Whether or not should display the "Show More" link.
-     */
-    disableShowMoreStats: boolean,
-
-    /**
      * The endpoint id of this client.
      */
     participantId: string,
@@ -81,7 +63,7 @@ type Props = {
      * Statistics related to frame rates for each ssrc.
      * {{
      *     [ ssrc ]: Number
-     * }}.
+     * }}
      */
     framerate: Object,
 
@@ -111,7 +93,7 @@ type Props = {
      * {{
      *     download: Number,
      *     upload: Number
-     * }}.
+     * }}
      */
     packetLoss: Object,
 
@@ -127,7 +109,7 @@ type Props = {
      *         height: Number,
      *         width: Number
      *     }
-     * }}.
+     * }}
      */
     resolution: Object,
 
@@ -159,35 +141,9 @@ type Props = {
 };
 
 /**
- * Click handler.
- *
- * @param {SyntheticEvent} event - The click event.
- * @returns {void}
- */
-function onClick(event) {
-    // If the event is propagated to the thumbnail container the participant will be pinned. That's why the propagation
-    // needs to be stopped.
-    event.stopPropagation();
-}
-
-const styles = theme => {
-    return {
-        contextMenu: {
-            position: 'relative',
-            marginTop: 0,
-            right: 'auto',
-            padding: `${theme.spacing(2)}px ${theme.spacing(1)}px`,
-            marginLeft: '4px',
-            marginRight: '4px',
-            marginBottom: '4px'
-        }
-    };
-};
-
-/**
  * React {@code Component} for displaying connection statistics.
  *
- * @augments Component
+ * @extends Component
  */
 class ConnectionStatsTable extends Component<Props> {
     /**
@@ -197,25 +153,12 @@ class ConnectionStatsTable extends Component<Props> {
      * @returns {ReactElement}
      */
     render() {
-        const { isLocalVideo, enableSaveLogs, disableShowMoreStats, classes } = this.props;
-        const className = isMobileBrowser() ? 'connection-info connection-info__mobile' : 'connection-info';
-
         return (
-            <ContextMenu
-                className = { classes.contextMenu }
-                hidden = { false }
-                inDrawer = { true }>
-                <div
-                    className = { className }
-                    onClick = { onClick }>
-                    { this._renderStatistics() }
-                    <div className = 'connection-actions'>
-                        { isLocalVideo && enableSaveLogs ? this._renderSaveLogs() : null}
-                        { !disableShowMoreStats && this._renderShowMoreLink() }
-                    </div>
-                    { this.props.shouldShowMore ? this._renderAdditionalStats() : null }
-                </div>
-            </ContextMenu>
+            <div className = 'connection-info'>
+                { this._renderStatistics() }
+
+                { this.props.shouldShowMore ? this._renderAdditionalStats() : null }
+            </div>
         );
     }
 
@@ -251,6 +194,7 @@ class ConnectionStatsTable extends Component<Props> {
      * @returns {ReactElement}
      */
     _renderBandwidth() {
+        
         const { download, upload } = this.props.bandwidth || {};
 
         return (
@@ -262,11 +206,11 @@ class ConnectionStatsTable extends Component<Props> {
                     <span className = 'connection-info__download'>
                         &darr;
                     </span>
-                    { download ? `${download} Kbps` : 'N/A' }
+                    { download ? `${new Intl.NumberFormat('id-ID').format(download)} Kbps` : 'N/A' }
                     <span className = 'connection-info__upload'>
                         &uarr;
                     </span>
-                    { upload ? `${upload} Kbps` : 'N/A' }
+                    { upload ? `${new Intl.NumberFormat('id-ID').format(upload)} Kbps` : 'N/A' }
                 </td>
             </tr>
         );
@@ -293,11 +237,11 @@ class ConnectionStatsTable extends Component<Props> {
                     <span className = 'connection-info__download'>
                         &darr;
                     </span>
-                    { download ? `${download} Kbps` : 'N/A' }
+                    { download ? `${new Intl.NumberFormat('id-ID').format(download)} Kbps` : 'N/A' }
                     <span className = 'connection-info__upload'>
                         &uarr;
                     </span>
-                    { upload ? `${upload} Kbps` : 'N/A' }
+                    { upload ? `${new Intl.NumberFormat('id-ID').format(upload)} Kbps` : 'N/A' }
                 </td>
             </tr>
         );
@@ -605,9 +549,7 @@ class ConnectionStatsTable extends Component<Props> {
             <span>
                 <a
                     className = 'savelogs link'
-                    onClick = { this.props.onSaveLogs }
-                    role = 'button'
-                    tabIndex = { 0 }>
+                    onClick = { this.props.onSaveLogs } >
                     { this.props.t('connectionindicator.savelogs') }
                 </a>
                 <span> | </span>
@@ -632,9 +574,7 @@ class ConnectionStatsTable extends Component<Props> {
         return (
             <a
                 className = 'showmore link'
-                onClick = { this.props.onShowMore }
-                role = 'button'
-                tabIndex = { 0 }>
+                onClick = { this.props.onShowMore } >
                 { this.props.t(translationKey) }
             </a>
         );
@@ -655,12 +595,7 @@ class ConnectionStatsTable extends Component<Props> {
                     { this._renderConnectionSummary() }
                     { this._renderBitrate() }
                     { this._renderPacketLoss() }
-                    { isRemoteVideo ? this._renderE2eRtt() : null }
-                    { isRemoteVideo ? this._renderRegion() : null }
                     { this._renderResolution() }
-                    { this._renderFrameRate() }
-                    { this._renderCodecs() }
-                    { isRemoteVideo ? null : this._renderBridgeCount() }
                 </tbody>
             </table>
         );
@@ -865,4 +800,4 @@ function getStringFromArray(array) {
     return res;
 }
 
-export default translate(withStyles(styles)(ConnectionStatsTable));
+export default translate(ConnectionStatsTable);

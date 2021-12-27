@@ -20,7 +20,6 @@ import { setCalendarAPIAuthState } from '../actions';
 const MS_API_CONFIGURATION = {
     /**
      * The URL to use when authenticating using Microsoft API.
-     *
      * @type {string}
      */
     AUTH_ENDPOINT:
@@ -40,6 +39,7 @@ const MS_API_CONFIGURATION = {
      * v2-oauth2-implicit-grant-flow#send-the-sign-in-request. This value is
      * needed for passing in the proper domain_hint value when trying to refresh
      * a token silently.
+     *
      *
      * @type {string}
      */

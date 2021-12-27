@@ -1,19 +1,22 @@
 // @flow
 
 import VideoLayout from '../../../modules/UI/videolayout/VideoLayout.js';
-import { CONFERENCE_WILL_LEAVE } from '../base/conference';
-import { MEDIA_TYPE } from '../base/media';
+import { CONFERENCE_JOINED, CONFERENCE_WILL_LEAVE } from '../base/conference';
 import {
-    getLocalParticipant,
+    DOMINANT_SPEAKER_CHANGED,
     PARTICIPANT_JOINED,
-    PARTICIPANT_UPDATED
+    PARTICIPANT_LEFT,
+    PARTICIPANT_UPDATED,
+    PIN_PARTICIPANT,
+    getParticipantById
 } from '../base/participants';
 import { MiddlewareRegistry } from '../base/redux';
-import { TRACK_ADDED, TRACK_REMOVED, TRACK_STOPPED } from '../base/tracks';
+import { TRACK_ADDED, TRACK_REMOVED } from '../base/tracks';
 import { SET_FILMSTRIP_VISIBLE } from '../filmstrip';
-import { PARTICIPANTS_PANE_CLOSE, PARTICIPANTS_PANE_OPEN } from '../participants-pane/actionTypes.js';
 
 import './middleware.any';
+
+declare var APP: Object;
 
 /**
  * Middleware which intercepts actions and updates the legacy component
@@ -30,14 +33,23 @@ MiddlewareRegistry.register(store => next => action => {
     const result = next(action);
 
     switch (action.type) {
+    case CONFERENCE_JOINED:
+        VideoLayout.mucJoined();
+        break;
+
     case CONFERENCE_WILL_LEAVE:
         VideoLayout.reset();
         break;
 
     case PARTICIPANT_JOINED:
         if (!action.participant.local) {
-            VideoLayout.updateVideoMutedForNoTracks(action.participant.id);
+            VideoLayout.addRemoteParticipantContainer(
+                getParticipantById(store.getState(), action.participant.id));
         }
+        break;
+
+    case PARTICIPANT_LEFT:
+        VideoLayout.removeParticipantContainer(action.participant.id);
         break;
 
     case PARTICIPANT_UPDATED: {
@@ -52,30 +64,27 @@ MiddlewareRegistry.register(store => next => action => {
         break;
     }
 
-    case PARTICIPANTS_PANE_CLOSE:
-    case PARTICIPANTS_PANE_OPEN:
+    case DOMINANT_SPEAKER_CHANGED:
+        VideoLayout.onDominantSpeakerChanged(action.participant.id);
+        break;
+
+    case PIN_PARTICIPANT:
+        VideoLayout.onPinChange(action.participant?.id);
+        break;
+
     case SET_FILMSTRIP_VISIBLE:
         VideoLayout.resizeVideoArea();
         break;
 
     case TRACK_ADDED:
-        if (action.track.mediaType !== MEDIA_TYPE.AUDIO) {
-            VideoLayout._updateLargeVideoIfDisplayed(action.track.participantId, true);
+        if (!action.track.local) {
+            VideoLayout.onRemoteStreamAdded(action.track.jitsiTrack);
         }
 
         break;
-
-    case TRACK_STOPPED: {
-        if (action.track.jitsiTrack.isLocal()) {
-            const participant = getLocalParticipant(store.getState);
-
-            VideoLayout._updateLargeVideoIfDisplayed(participant?.id);
-        }
-        break;
-    }
     case TRACK_REMOVED:
-        if (!action.track.local && action.track.mediaType !== MEDIA_TYPE.AUDIO) {
-            VideoLayout.updateVideoMutedForNoTracks(action.track.jitsiTrack.getParticipantId());
+        if (!action.track.local) {
+            VideoLayout.onRemoteStreamRemoved(action.track.jitsiTrack);
         }
 
         break;

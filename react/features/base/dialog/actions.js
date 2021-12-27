@@ -64,5 +64,6 @@ export function toggleDialog(component: Object, componentProps: ?Object) {
         } else {
             dispatch(openDialog(component, componentProps));
         }
+        document.dispatchEvent(new CustomEvent('videoapi-refresh-layout'));
     };
 }

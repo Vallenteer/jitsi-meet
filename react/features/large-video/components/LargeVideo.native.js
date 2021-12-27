@@ -71,11 +71,11 @@ const DEFAULT_STATE = {
     useConnectivityInfoLabel: true
 };
 
-/** .
+/**
  * Implements a React {@link Component} which represents the large video (a.k.a.
- * The conference participant who is on the local stage) on mobile/React Native.
+ * the conference participant who is on the local stage) on mobile/React Native.
  *
- * @augments Component
+ * @extends Component
  */
 class LargeVideo extends PureComponent<Props, State> {
     state = {

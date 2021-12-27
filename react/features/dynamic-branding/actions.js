@@ -1,6 +1,6 @@
 // @flow
 
-import { getLogger } from '@jitsi/logger';
+import { getLogger } from 'jitsi-meet-logger';
 
 import { doGetJSON } from '../base/util';
 
@@ -9,10 +9,9 @@ import {
     SET_DYNAMIC_BRANDING_FAILED,
     SET_DYNAMIC_BRANDING_READY
 } from './actionTypes';
-import { getDynamicBrandingUrl } from './functions.any';
+import { extractFqnFromPath } from './functions';
 
 const logger = getLogger(__filename);
-
 
 /**
  * Fetches custom branding data.
@@ -24,14 +23,15 @@ const logger = getLogger(__filename);
 export function fetchCustomBrandingData() {
     return async function(dispatch: Function, getState: Function) {
         const state = getState();
+        const baseUrl = state['features/base/config'].brandingDataUrl;
         const { customizationReady } = state['features/dynamic-branding'];
 
         if (!customizationReady) {
-            const url = await getDynamicBrandingUrl();
+            const fqn = extractFqnFromPath(state['features/base/connection'].locationURL.pathname);
 
-            if (url) {
+            if (baseUrl && fqn) {
                 try {
-                    const res = await doGetJSON(url);
+                    const res = await doGetJSON(`${baseUrl}?conferenceFqn=${encodeURIComponent(fqn)}`);
 
                     return dispatch(setDynamicBrandingData(res));
                 } catch (err) {

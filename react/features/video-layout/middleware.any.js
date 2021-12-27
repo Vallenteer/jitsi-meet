@@ -1,20 +1,12 @@
 // @flow
 
 import { getCurrentConference } from '../base/conference';
-import {
-    PARTICIPANT_LEFT,
-    PIN_PARTICIPANT,
-    pinParticipant,
-    getParticipantById,
-    getPinnedParticipant
-} from '../base/participants';
+import { PIN_PARTICIPANT, pinParticipant, getPinnedParticipant } from '../base/participants';
 import { MiddlewareRegistry, StateListenerRegistry } from '../base/redux';
 import { SET_DOCUMENT_EDITING_STATUS } from '../etherpad';
-import { isFollowMeActive } from '../follow-me';
 
 import { SET_TILE_VIEW } from './actionTypes';
 import { setTileView } from './actions';
-import { getAutoPinSetting, updateAutoPinnedParticipant } from './functions';
 
 import './subscriber';
 
@@ -27,20 +19,6 @@ let previousTileViewEnabled;
  * @returns {Function}
  */
 MiddlewareRegistry.register(store => next => action => {
-
-    // we want to extract the leaving participant and check its type before actually the participant being removed.
-    let shouldUpdateAutoPin = false;
-
-    switch (action.type) {
-    case PARTICIPANT_LEFT: {
-        if (!getAutoPinSetting() || isFollowMeActive(store)) {
-            break;
-        }
-        shouldUpdateAutoPin = getParticipantById(store.getState(), action.participant.id)?.isFakeParticipant;
-        break;
-    }
-    }
-
     const result = next(action);
 
     switch (action.type) {
@@ -72,11 +50,6 @@ MiddlewareRegistry.register(store => next => action => {
         }
     }
 
-    if (shouldUpdateAutoPin) {
-        const screenShares = store.getState()['features/video-layout'].remoteScreenShares || [];
-
-        updateAutoPinnedParticipant(screenShares, store);
-    }
 
     return result;
 });
@@ -96,7 +69,7 @@ StateListenerRegistry.register(
     });
 
 /**
- * Restores tile view state, if it wasn't updated since then.
+ * Respores tile view state, if it wasn't updated since then.
  *
  * @param {Object} store - The Redux Store.
  * @returns {void}

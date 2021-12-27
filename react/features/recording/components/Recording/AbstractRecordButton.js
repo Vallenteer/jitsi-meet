@@ -5,16 +5,14 @@ import {
     sendAnalytics
 } from '../../../analytics';
 import { openDialog } from '../../../base/dialog';
-import { IconToggleRecording } from '../../../base/icons';
+import { IconImage, IconToggleRecording } from '../../../base/icons';
+import { IconImageRecordDark } from '../../../base/icons/videoapi';
 import { JitsiRecordingConstants } from '../../../base/lib-jitsi-meet';
 import {
     getLocalParticipant,
     isLocalParticipantModerator
 } from '../../../base/participants';
 import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
-import { isInBreakoutRoom } from '../../../breakout-rooms/functions';
-import { maybeShowPremiumFeatureDialog } from '../../../jaas/actions';
-import { FEATURES } from '../../../jaas/constants';
 import { getActiveSession } from '../../functions';
 
 import { StartRecordingDialog, StopRecordingDialog } from './_';
@@ -56,7 +54,7 @@ export type Props = AbstractButtonProps & {
  */
 export default class AbstractRecordButton<P: Props> extends AbstractButton<P, *> {
     accessibilityLabel = 'toolbar.accessibilityLabel.recording';
-    icon = IconToggleRecording;
+    iconImage = IconImageRecordDark;
     label = 'dialog.startRecording';
     toggledLabel = 'dialog.stopRecording';
 
@@ -77,14 +75,8 @@ export default class AbstractRecordButton<P: Props> extends AbstractButton<P, *>
      * @protected
      * @returns {void}
      */
-    async _handleClick() {
-        const { _isRecordingRunning, dispatch, handleClick } = this.props;
-
-        if (handleClick) {
-            handleClick();
-
-            return;
-        }
+    _handleClick() {
+        const { _isRecordingRunning, dispatch } = this.props;
 
         sendAnalytics(createToolbarEvent(
             'recording.button',
@@ -93,13 +85,9 @@ export default class AbstractRecordButton<P: Props> extends AbstractButton<P, *>
                 type: JitsiRecordingConstants.mode.FILE
             }));
 
-        const dialogShown = await dispatch(maybeShowPremiumFeatureDialog(FEATURES.RECORDING));
-
-        if (!dialogShown) {
-            dispatch(openDialog(
-                _isRecordingRunning ? StopRecordingDialog : StartRecordingDialog
-            ));
-        }
+        dispatch(openDialog(
+            _isRecordingRunning ? StopRecordingDialog : StartRecordingDialog
+        ));
     }
 
     /**
@@ -175,12 +163,6 @@ export function _mapStateToProps(state: Object, ownProps: Props): Object {
     if (getActiveSession(state, JitsiRecordingConstants.mode.STREAM)) {
         _disabled = true;
         _tooltip = 'dialog.recordingDisabledBecauseOfActiveLiveStreamingTooltip';
-    }
-
-    // disable the button if we are in a breakout room.
-    if (isInBreakoutRoom(state)) {
-        _disabled = true;
-        visible = false;
     }
 
     return {

@@ -3,4 +3,4 @@
  *
  * @type {string}
  */
-export const TALK_WHILE_MUTED_SOUND_ID = 'TALK_WHILE_MUTED_SOUND';
+export const TALK_WHILE_MUTED_SOUND_ID = 'TALK_WHILE_MUTED_SOUND_ID';

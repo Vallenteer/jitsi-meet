@@ -7,10 +7,9 @@ import { ColorSchemeRegistry } from '../../../base/color-scheme';
 import { getFeatureFlag, INVITE_ENABLED } from '../../../base/flags';
 import { translate } from '../../../base/i18n';
 import { Icon, IconAddPeople } from '../../../base/icons';
-import { getParticipantCountWithFake } from '../../../base/participants';
+import { getParticipantCount } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { StyleType } from '../../../base/styles';
-import { isInBreakoutRoom } from '../../../breakout-rooms/functions';
 import { doInvitePeople } from '../../../invite/actions.native';
 
 import styles from './styles';
@@ -19,11 +18,6 @@ import styles from './styles';
  * Props type of the component.
  */
 type Props = {
-
-    /**
-     * True if currently in a breakout room.
-     */
-     _isInBreakoutRoom: boolean,
 
     /**
      * True if the invite functions (dial out, invite, share...etc) are disabled.
@@ -72,13 +66,7 @@ class LonelyMeetingExperience extends PureComponent<Props> {
      * @inheritdoc
      */
     render() {
-        const {
-            _isInBreakoutRoom,
-            _isInviteFunctionsDiabled,
-            _isLonelyMeeting,
-            _styles,
-            t
-        } = this.props;
+        const { _isInviteFunctionsDiabled, _isLonelyMeeting, _styles, t } = this.props;
 
         if (!_isLonelyMeeting) {
             return null;
@@ -93,7 +81,7 @@ class LonelyMeetingExperience extends PureComponent<Props> {
                     ] }>
                     { t('lonelyMeetingExperience.youAreAlone') }
                 </Text>
-                { !_isInviteFunctionsDiabled && !_isInBreakoutRoom && (
+                { !_isInviteFunctionsDiabled && (
                     <TouchableOpacity
                         onPress = { this._onPress }
                         style = { [
@@ -140,12 +128,10 @@ function _mapStateToProps(state): $Shape<Props> {
     const { disableInviteFunctions } = state['features/base/config'];
     const { conference } = state['features/base/conference'];
     const flag = getFeatureFlag(state, INVITE_ENABLED, true);
-    const _isInBreakoutRoom = isInBreakoutRoom(state);
 
     return {
-        _isInBreakoutRoom,
         _isInviteFunctionsDiabled: !flag || disableInviteFunctions,
-        _isLonelyMeeting: conference && getParticipantCountWithFake(state) === 1,
+        _isLonelyMeeting: conference && getParticipantCount(state) === 1,
         _styles: ColorSchemeRegistry.get(state, 'Conference')
     };
 }

@@ -5,7 +5,7 @@ import React, { Component } from 'react';
 import { getFixedPlatformStyle } from '../../styles';
 
 /**
- * {@code AbstractContainer} Component's property types.
+ * {@code AbstractContainer} component's property types.
  */
 export type Props = {
 
@@ -69,7 +69,7 @@ export type Props = {
  * Abstract (base) class for container of React {@link Component} children with
  * a style.
  *
- * @augments Component
+ * @extends Component
  */
 export default class AbstractContainer<P: Props> extends Component<P> {
     /**

@@ -11,7 +11,7 @@ import './native';
     }
 })(global || window || this); // eslint-disable-line no-invalid-this
 
-// Re-export JitsiMeetJS from the library lib-jitsi-meet to (the other features
+// Re-export LibVideoAPI from the library lib-jitsi-meet to (the other features
 // of) the project jitsi-meet.
 //
 // TODO The Web support implemented by the jitsi-meet project explicitly uses
@@ -21,5 +21,5 @@ import './native';
 // used it from source. As an intermediate step, start using the library
 // lib-jitsi-meet as a binary on mobile at the time of this writing. In the
 // future, implement not packaging it in the application bundle.
-import JitsiMeetJS from 'lib-jitsi-meet/lib-jitsi-meet.min';
-export { JitsiMeetJS as default };
+import LibVideoAPI from 'libvideoapi/libvideoapi.min';
+export { LibVideoAPI as default };

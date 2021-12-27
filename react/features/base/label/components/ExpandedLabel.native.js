@@ -3,7 +3,7 @@
 import React, { Component } from 'react';
 import { Animated, Text, View } from 'react-native';
 
-import styles, { DEFAULT_COLOR } from './styles';
+import styles, { DEFAULT_COLOR, LABEL_MARGIN, LABEL_SIZE } from './styles';
 
 export type Props = {
 
@@ -19,8 +19,20 @@ type State = {
     /**
      * The opacity animation Object.
      */
-    opacityAnimation: Object
+    opacityAnimation: Object,
+
+    /**
+     * A boolean to descide to show or not show the arrow. This is required as
+     * we can't easily animate this transformed Component so we render it once
+     * the animation is done.
+     */
+    showArrow: boolean
 };
+
+/**
+ * Offset to the arrow to be rendered in the right position.
+ */
+const ARROW_OFFSET = 0;
 
 /**
  * A react {@code Component} that implements an expanded label as tooltip-like
@@ -36,7 +48,8 @@ export default class ExpandedLabel<P: Props> extends Component<P, State> {
         super(props);
 
         this.state = {
-            opacityAnimation: new Animated.Value(0)
+            opacityAnimation: new Animated.Value(0),
+            showArrow: false
         };
     }
 
@@ -50,7 +63,11 @@ export default class ExpandedLabel<P: Props> extends Component<P, State> {
             toValue: 1,
             velocity: 1,
             useNativeDriver: true
-        }).start();
+        }).start(({ finished }) => {
+            finished && this.setState({
+                showArrow: true
+            });
+        });
     }
 
     /**
@@ -59,12 +76,32 @@ export default class ExpandedLabel<P: Props> extends Component<P, State> {
      * @inheritdoc
      */
     render() {
+        const arrowPosition
+            = this.props.parentPosition - LABEL_MARGIN - (LABEL_SIZE / 2);
+
         return (
             <Animated.View
-                style = { [ styles.expandedLabelContainer, { opacity: this.state.opacityAnimation } ] }>
+                style = { [
+                    styles.expandedLabelWrapper,
+                    {
+                        opacity: this.state.opacityAnimation
+                    }
+                ] } >
                 <View
-                    style = { [ styles.expandedLabelTextContainer,
-                        { backgroundColor: this._getColor() || DEFAULT_COLOR } ] }>
+                    style = { [
+                        styles.expandedLabelArrow,
+                        {
+                            backgroundColor: this._getColor() || DEFAULT_COLOR,
+                            marginRight: arrowPosition + ARROW_OFFSET
+                        }
+                    ] } />
+                <View
+                    style = { [
+                        styles.expandedLabelContainer,
+                        {
+                            backgroundColor: this._getColor() || DEFAULT_COLOR
+                        }
+                    ] }>
                     <Text style = { styles.expandedLabelText }>
                         { this._getLabel() }
                     </Text>
@@ -79,9 +116,9 @@ export default class ExpandedLabel<P: Props> extends Component<P, State> {
      *
      * @returns {string}
      */
-    _getLabel: () => string;
+    _getLabel: () => string
 
-    _getColor: () => string;
+    _getColor: () => string
 
     /**
      * Defines the color of the expanded label. This function returns a default

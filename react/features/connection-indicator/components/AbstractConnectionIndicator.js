@@ -6,8 +6,6 @@ import statsEmitter from '../statsEmitter';
 
 declare var interfaceConfig: Object;
 
-const defaultAutoHideTimeout = 5000;
-
 /**
  * The connection quality percentage that must be reached to be considered of
  * good quality and can result in the connection indicator being hidden.
@@ -20,11 +18,6 @@ export const INDICATOR_DISPLAY_THRESHOLD = 30;
  * The type of the React {@code Component} props of {@link ConnectionIndicator}.
  */
 export type Props = {
-
-    /**
-     * How long the connection indicator should remain displayed before hiding.
-     */
-    _autoHideTimeout: number,
 
     /**
      * The ID of the participant associated with the displayed connection indication and
@@ -57,13 +50,13 @@ export type State = {
  * Implements a React {@link Component} which displays the current connection
  * quality.
  *
- * @augments {Component}
+ * @extends {Component}
  */
-class AbstractConnectionIndicator<P: Props, S: State> extends Component<P, S> {
+export default class AbstractConnectionIndicator<P: Props, S: State> extends Component<P, S> {
     /**
      * The timeout for automatically hiding the indicator.
      */
-    autoHideTimeout: ?TimeoutID;
+    autoHideTimeout: ?TimeoutID
 
     /**
      * Initializes a new {@code ConnectionIndicator} instance.
@@ -172,23 +165,9 @@ class AbstractConnectionIndicator<P: Props, S: State> extends Component<P, S> {
                 this.setState({
                     showIndicator: false
                 });
-            }, this.props._autoHideTimeout);
+            }, typeof interfaceConfig === 'undefined'
+                ? 5000
+                : interfaceConfig.CONNECTION_INDICATOR_AUTO_HIDE_TIMEOUT);
         }
     }
 }
-
-/**
- * Maps (parts of) the Redux state to the associated props for the
- * {@code ConnectorIndicator} component.
- *
- * @param {Object} state - The Redux state.
- * @private
- * @returns {Props}
- */
-export function mapStateToProps(state: Object) {
-    return {
-        _autoHideTimeout: state['features/base/config'].connectionIndicators.autoHideTimeout ?? defaultAutoHideTimeout
-    };
-}
-
-export default AbstractConnectionIndicator;

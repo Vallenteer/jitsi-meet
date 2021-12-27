@@ -5,7 +5,7 @@ import { Component } from 'react';
 /**
  * A React Component for joining an existing calendar meeting.
  *
- * @augments Component
+ * @extends Component
  */
 class JoinButton extends Component<*> {
     /**

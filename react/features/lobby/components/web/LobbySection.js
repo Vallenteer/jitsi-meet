@@ -6,7 +6,6 @@ import { translate } from '../../../base/i18n';
 import { isLocalParticipantModerator } from '../../../base/participants';
 import { Switch } from '../../../base/react';
 import { connect } from '../../../base/redux';
-import { isInBreakoutRoom } from '../../../breakout-rooms/functions';
 import { toggleLobbyMode } from '../../actions';
 
 type Props = {
@@ -90,17 +89,14 @@ class LobbySection extends PureComponent<Props, State> {
         return (
             <>
                 <div id = 'lobby-section'>
-                    <p
-                        className = 'description'
-                        role = 'banner'>
+                    <p className = 'description'>
                         { t('lobby.enableDialogText') }
                     </p>
                     <div className = 'control-row'>
-                        <label htmlFor = 'lobby-section-switch'>
+                        <label>
                             { t('lobby.toggleLabel') }
                         </label>
                         <Switch
-                            id = 'lobby-section-switch'
                             onValueChange = { this._onToggleLobby }
                             value = { this.state.lobbyEnabled } />
                     </div>
@@ -140,10 +136,8 @@ function mapStateToProps(state: Object): $Shape<Props> {
 
     return {
         _lobbyEnabled: state['features/lobby'].lobbyEnabled,
-
-        // $FlowExpectedError
-        _visible: conference?.isLobbySupported() && isLocalParticipantModerator(state)
-            && !hideLobbyButton && !isInBreakoutRoom(state)
+        _visible: conference && conference.isLobbySupported() && isLocalParticipantModerator(state)
+            && !hideLobbyButton
     };
 }
 

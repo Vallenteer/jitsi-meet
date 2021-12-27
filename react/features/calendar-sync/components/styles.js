@@ -1,5 +1,4 @@
 import { ColorPalette, createStyleSheet } from '../../base/styles';
-import BaseTheme from '../../base/ui/components/BaseTheme';
 
 const NOTIFICATION_SIZE = 55;
 
@@ -164,18 +163,5 @@ export default createStyleSheet({
      */
     touchableView: {
         flexDirection: 'row'
-    },
-
-    calendarSync: {
-        backgroundColor: BaseTheme.palette.uiBackground,
-        flex: 1,
-        overflow: 'hidden'
-    },
-
-    calendarSyncDisabled: {
-        backgroundColor: BaseTheme.palette.uiBackground,
-        flex: 1,
-        opacity: 0.8,
-        overflow: 'hidden'
     }
 });

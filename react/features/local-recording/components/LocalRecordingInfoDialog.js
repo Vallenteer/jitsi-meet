@@ -75,7 +75,7 @@ type State = {
  * local recording. For users with moderator rights, this is also the "control
  * panel" for starting/stopping local recording on all clients.
  *
- * @augments Component
+ * @extends Component
  */
 class LocalRecordingInfoDialog extends Component<Props, State> {
 
@@ -306,15 +306,11 @@ class LocalRecordingInfoDialog extends Component<Props, State> {
                 <div className = 'localrec-control-action-links'>
                     <div className = 'localrec-control-action-link'>
                         { isEngaged ? <a
-                            onClick = { this._onStop }
-                            role = 'button'
-                            tabIndex = { 0 }>
+                            onClick = { this._onStop }>
                             { t('localRecording.stop') }
                         </a>
                             : <a
-                                onClick = { this._onStart }
-                                role = 'button'
-                                tabIndex = { 0 }>
+                                onClick = { this._onStart }>
                                 { t('localRecording.start') }
                             </a>
                         }

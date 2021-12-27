@@ -1,11 +1,10 @@
 /* @flow */
 
-import { makeStyles } from '@material-ui/core';
-import React from 'react';
+import Tooltip from '@atlaskit/tooltip';
+import React, { Component } from 'react';
 
 import { translate } from '../../../i18n';
-import { Icon } from '../../../icons';
-import { Tooltip } from '../../../tooltip';
+import { Icon, IconImage } from '../../../icons';
 
 /**
  * The type of the React {@code Component} props of {@link BaseIndicator}.
@@ -13,7 +12,7 @@ import { Tooltip } from '../../../tooltip';
 type Props = {
 
     /**
-     * Additional CSS class name.
+     * Additional CSS class names to set on the icon container.
      */
     className: string,
 
@@ -28,11 +27,6 @@ type Props = {
     iconClassName: string,
 
     /**
-     * The color of the icon.
-     */
-    iconColor: ?string,
-
-    /**
      * Id of the icon to be rendered.
      */
     iconId?: string,
@@ -43,7 +37,7 @@ type Props = {
     iconSize: string,
 
     /**
-     * The ID attribute to set on the root element of the component.
+     * The ID attribue to set on the root element of the component.
      */
     id: string,
 
@@ -65,60 +59,78 @@ type Props = {
     tooltipPosition: string
 };
 
-const useStyles = makeStyles(() => {
-    return {
-        indicator: {
-            width: '20px',
-            height: '20px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-        }
-    };
-});
-
 /**
  * React {@code Component} for showing an icon with a tooltip.
  *
- * @returns {ReactElement}
+ * @extends Component
  */
-const BaseIndicator = ({
-    className = '',
-    icon,
-    iconClassName,
-    iconColor,
-    iconId,
-    iconSize,
-    id = '',
-    t,
-    tooltipKey,
-    tooltipPosition = 'top'
-}: Props) => {
-    const styles = useStyles();
-    const style = {};
+class BaseIndicator extends Component<Props> {
+    /**
+     * Default values for {@code BaseIndicator} component's properties.
+     *
+     * @static
+     */
+    static defaultProps = {
+        className: '',
+        id: '',
+        tooltipPosition: 'top'
+    };
 
-    if (iconSize) {
-        style.fontSize = iconSize;
+    /**
+     * Implements React's {@link Component#render()}.
+     *
+     * @inheritdoc
+     * @returns {ReactElement}
+     */
+    render() {
+        const {
+            className,
+            icon,
+            iconClassName,
+            iconId,
+            iconSize,
+            id,
+            t,
+            tooltipKey,
+            tooltipPosition,
+            iconImage,
+            indicatorMuted
+        } = this.props;
+        const iconContainerClassName = `indicator-icon-container ${className}`;
+        const style = {};
+
+        if (iconSize) {
+            style.fontSize = iconSize;
+        }
+
+        return (
+            <div className = 'indicator-container'>
+                <Tooltip
+                    content = { t(tooltipKey) }
+                    position = { tooltipPosition }>
+                    <span
+                        className = { iconContainerClassName }
+                        id = { id }>
+                        {iconImage
+                        ?
+                            <IconImage
+                                className = { iconClassName }
+                                id = { iconId }
+                                src = { iconImage }
+                                indicatorMuted = { indicatorMuted }
+                                style = { style } />
+                        :
+                            <Icon
+                                className = { iconClassName }
+                                id = { iconId }
+                                src = { icon }
+                                style = { style } />
+                        }
+                    </span>
+                </Tooltip>
+            </div>
+        );
     }
-
-    return (
-        <div className = { styles.indicator }>
-            <Tooltip
-                content = { t(tooltipKey) }
-                position = { tooltipPosition }>
-                <span
-                    className = { className }
-                    id = { id }>
-                    <Icon
-                        className = { iconClassName }
-                        color = { iconColor }
-                        id = { iconId }
-                        src = { icon }
-                        style = { style } />
-                </span>
-            </Tooltip>
-        </div>
-    );
-};
+}
 
 export default translate(BaseIndicator);

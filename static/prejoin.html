@@ -13,12 +13,20 @@
 
           const url = new URL(window.location.href);
           const params = new URLSearchParams(url.search);
-          const styleType = params.get('styleType');
+          const showAvatar = params.get('showAvatar') === 'true';
+          const showJoinActions = params.get('showJoinActions') === 'true';
+          const showSkipPrejoin = params.get('showSkipPrejoin') === 'true';
+          const css = params.get('style');
+          const style = document.createElement('style');
+          style.appendChild(document.createTextNode(css));
+          document.head.appendChild(style);
 
           JitsiMeetJS.app.renderEntryPoint({
               Component: JitsiMeetJS.app.entryPoints.PREJOIN,
               props: {
-                styleType
+                showAvatar,
+                showJoinActions,
+                showSkipPrejoin
               }
           })
       })
@@ -30,6 +38,6 @@
     <script src="libs/app.bundle.min.js?v=139"></script>
   </head>
   <body>
-    <div id="react" role="main"></div>
+    <div id="react"></div>
   </body>
 </html>

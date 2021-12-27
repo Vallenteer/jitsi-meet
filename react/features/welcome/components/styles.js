@@ -2,23 +2,22 @@
 
 import { StyleSheet } from 'react-native';
 
-import { BoxModel } from '../../base/styles';
-import BaseTheme from '../../base/ui/components/BaseTheme.native';
+import { BoxModel, ColorPalette } from '../../base/styles';
 
-export const PLACEHOLDER_TEXT_COLOR = BaseTheme.palette.text01;
+export const PLACEHOLDER_TEXT_COLOR = 'rgba(255, 255, 255, 0.5)';
 
-export const DRAWER_AVATAR_SIZE = 104;
+export const SIDEBAR_AVATAR_SIZE = 100;
 
-const DRAWER_HEADER_HEIGHT = 220;
+const SIDEBAR_HEADER_HEIGHT = 150;
 
-export const SWITCH_THUMB_COLOR = BaseTheme.palette.action04;
+export const SWITCH_THUMB_COLOR = ColorPalette.blueHighlight;
 
-export const SWITCH_UNDER_COLOR = BaseTheme.palette.video01Disabled;
+export const SWITCH_UNDER_COLOR = 'rgba(0, 0, 0, 0.4)';
 
 /**
  * The default color of text on the WelcomePage.
  */
-const TEXT_COLOR = BaseTheme.palette.text01;
+const TEXT_COLOR = ColorPalette.white;
 
 /**
  * The styles of the React {@code Components} of the feature welcome including
@@ -38,13 +37,7 @@ export default {
      */
     audioVideoSwitchContainer: {
         alignItems: 'center',
-        flexDirection: 'row',
-        marginRight: BaseTheme.spacing[2]
-    },
-
-    blankPageText: {
-        color: TEXT_COLOR,
-        fontSize: 18
+        flexDirection: 'row'
     },
 
     /**
@@ -53,7 +46,6 @@ export default {
     blankPageWrapper: {
         ...StyleSheet.absoluteFillObject,
         alignItems: 'center',
-        backgroundColor: BaseTheme.palette.uiBackground,
         flex: 1,
         flexDirection: 'column',
         justifyContent: 'center'
@@ -63,8 +55,8 @@ export default {
      * Join button style.
      */
     button: {
-        backgroundColor: BaseTheme.palette.screen01Header,
-        borderColor: BaseTheme.palette.screen01Header,
+        backgroundColor: ColorPalette.blue,
+        borderColor: ColorPalette.blue,
         borderRadius: 4,
         borderWidth: 1,
         height: 30,
@@ -77,23 +69,15 @@ export default {
      */
     buttonText: {
         alignSelf: 'center',
-        color: BaseTheme.palette.text01,
+        color: ColorPalette.white,
         fontSize: 14
-    },
-
-    /**
-     * Drawer style.
-     */
-    drawerStyle: {
-        backgroundColor: BaseTheme.palette.ui12,
-        width: '54%'
     },
 
     /**
      * The style of the display name label in the side bar.
      */
     displayName: {
-        color: BaseTheme.palette.text01,
+        color: ColorPalette.white,
         fontSize: 16,
         marginTop: BoxModel.margin,
         textAlign: 'center'
@@ -103,6 +87,13 @@ export default {
         color: TEXT_COLOR,
         fontSize: 18,
         marginBottom: BoxModel.margin
+    },
+
+    /**
+     * The welcome screen header style.
+     */
+    header: {
+        justifyContent: 'space-between'
     },
 
     /**
@@ -151,8 +142,8 @@ export default {
     },
 
     messageContainer: {
-        backgroundColor: BaseTheme.palette.ui12,
-        borderColor: BaseTheme.palette.field02,
+        backgroundColor: ColorPalette.white,
+        borderColor: ColorPalette.white,
         borderRadius: 4,
         borderWidth: 1,
         marginVertical: 5,
@@ -183,7 +174,7 @@ export default {
      */
     reducedUIContainer: {
         alignItems: 'center',
-        backgroundColor: BaseTheme.palette.screen01Header,
+        backgroundColor: ColorPalette.blue,
         flex: 1,
         justifyContent: 'center'
     },
@@ -202,21 +193,62 @@ export default {
     },
 
     /**
-     * The style of the side bar header.
+     * Container of the side bar.
      */
-    drawerHeader: {
-        alignItems: 'center',
-        backgroundColor: BaseTheme.palette.screen01Header,
-        flexDirection: 'column',
-        height: DRAWER_HEADER_HEIGHT,
-        justifyContent: 'center'
+    sideBar: {
+        width: 250
     },
 
-    drawerNavigationIcon: {
-        height: BaseTheme.spacing[6],
-        marginLeft: BaseTheme.spacing[1],
-        marginTop: BaseTheme.spacing[1],
-        width: BaseTheme.spacing[6]
+    /**
+     * The body of the side bar where the items are.
+     */
+    sideBarBody: {
+        backgroundColor: ColorPalette.white,
+        flex: 1
+    },
+
+    /**
+     * The style of the side bar header.
+     */
+    sideBarHeader: {
+        alignItems: 'center',
+        flexDirection: 'column',
+        height: SIDEBAR_HEADER_HEIGHT,
+        justifyContent: 'center',
+        padding: BoxModel.padding
+    },
+
+    /**
+     * Style of the menu items in the side bar.
+     */
+    sideBarItem: {
+        padding: 13
+    },
+
+    /**
+     * The View inside the side bar buttons (icon + text).
+     */
+    sideBarItemButtonContainer: {
+        alignItems: 'center',
+        flexDirection: 'row',
+        justifyContent: 'flex-start'
+    },
+
+    /**
+     * The icon in the side bar item touchables.
+     */
+    sideBarItemIcon: {
+        color: ColorPalette.blueHighlight,
+        fontSize: 20,
+        marginRight: 15
+    },
+
+    /**
+     * The label of the side bar item touchables.
+     */
+    sideBarItemText: {
+        color: ColorPalette.black,
+        fontWeight: 'bold'
     },
 
     /**
@@ -231,7 +263,7 @@ export default {
      */
     textInput: {
         backgroundColor: 'transparent',
-        borderColor: BaseTheme.palette.field02,
+        borderColor: ColorPalette.white,
         borderRadius: 4,
         borderWidth: 1,
         color: TEXT_COLOR,
@@ -258,13 +290,13 @@ export default {
     },
 
     insecureRoomNameWarningIcon: {
-        color: BaseTheme.palette.warning03,
+        color: ColorPalette.warning,
         fontSize: 24,
         marginRight: 10
     },
 
     insecureRoomNameWarningText: {
-        color: BaseTheme.palette.warning03,
+        color: ColorPalette.warning,
         flex: 1
     },
 
@@ -272,21 +304,7 @@ export default {
      * The style of the top-level container of {@code WelcomePage}.
      */
     welcomePage: {
-        backgroundColor: BaseTheme.palette.uiBackground,
-        flex: 1,
-        overflow: 'hidden'
-    },
-
-    recentList: {
-        backgroundColor: BaseTheme.palette.uiBackground,
-        flex: 1,
-        overflow: 'hidden'
-    },
-
-    recentListDisabled: {
-        backgroundColor: BaseTheme.palette.uiBackground,
-        flex: 1,
-        opacity: 0.8,
+        backgroundColor: ColorPalette.blue,
         overflow: 'hidden'
     }
 };

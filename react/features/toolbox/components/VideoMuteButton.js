@@ -9,7 +9,6 @@ import {
     sendAnalytics
 } from '../../analytics';
 import { setAudioOnly } from '../../base/audio-only';
-import { getFeatureFlag, VIDEO_MUTE_BUTTON_ENABLED } from '../../base/flags';
 import { translate } from '../../base/i18n';
 import {
     VIDEO_MUTISM_AUTHORITY,
@@ -57,11 +56,11 @@ type Props = AbstractButtonProps & {
 /**
  * Component that renders a toolbar button for toggling video mute.
  *
- * @augments AbstractVideoMuteButton
+ * @extends AbstractVideoMuteButton
  */
 class VideoMuteButton extends AbstractVideoMuteButton<Props, *> {
     accessibilityLabel = 'toolbar.accessibilityLabel.videomute';
-    label = 'toolbar.videomute';
+    label = 'Video';
     tooltip = 'toolbar.videomute';
 
     /**
@@ -115,7 +114,7 @@ class VideoMuteButton extends AbstractVideoMuteButton<Props, *> {
     }
 
     /**
-     * Indicates if video is currently muted or not.
+     * Indicates if video is currently muted ot nor.
      *
      * @override
      * @protected
@@ -135,11 +134,6 @@ class VideoMuteButton extends AbstractVideoMuteButton<Props, *> {
      * @returns {void}
      */
     _onKeyboardShortcut() {
-        // Ignore keyboard shortcuts if the video button is disabled.
-        if (this._isDisabled()) {
-            return;
-        }
-
         sendAnalytics(
             createShortcutEvent(
                 VIDEO_MUTE,
@@ -193,14 +187,12 @@ class VideoMuteButton extends AbstractVideoMuteButton<Props, *> {
 function _mapStateToProps(state): Object {
     const { enabled: audioOnly } = state['features/base/audio-only'];
     const tracks = state['features/base/tracks'];
-    const enabledFlag = getFeatureFlag(state, VIDEO_MUTE_BUTTON_ENABLED, true);
 
     return {
         _audioOnly: Boolean(audioOnly),
         _videoDisabled: isVideoMuteButtonDisabled(state),
         _videoMediaType: getLocalVideoType(tracks),
-        _videoMuted: isLocalCameraTrackMuted(tracks),
-        visible: enabledFlag
+        _videoMuted: isLocalCameraTrackMuted(tracks)
     };
 }
 

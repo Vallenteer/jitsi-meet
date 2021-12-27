@@ -49,11 +49,9 @@
         "messagebox": "",
         "nickname": {
             "popover": "Kies ’n bynaam",
-            "title": "",
-            "titleWithPolls": ""
+            "title": ""
         },
-        "title": "",
-        "titleWithPolls": ""
+        "title": ""
     },
     "connectingOverlay": {
         "joiningRoom": ""

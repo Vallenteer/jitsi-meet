@@ -16,14 +16,9 @@ export type Props = {
 
     /**
      * Extra styles which will be applied in conjunction with `styles` or
-     * `toggledStyles` when the button is disabled;.
+     * `toggledStyles` when the button is disabled;
      */
     disabledStyles: ?Styles,
-
-    /**
-     * External handler for click action.
-     */
-     handleClick?: Function,
 
     /**
      * Whether to show the label or not.
@@ -170,6 +165,12 @@ export default class AbstractButton<P: Props, S: *> extends Component<P, S> {
         ) || this.icon;
     }
 
+    _getIconImage() {
+        return (
+            this._isToggled() ? this.toggledIconImage : this.iconImage
+        ) || this.iconImage;
+    }
+
     /**
      * Gets the current label, taking the toggled state into account. If no
      * toggled label is provided, the regular label will also be used in the
@@ -251,18 +252,14 @@ export default class AbstractButton<P: Props, S: *> extends Component<P, S> {
      * Handles clicking / pressing the button, and toggles the audio mute state
      * accordingly.
      *
-     * @param {Object} e - Event.
      * @private
      * @returns {void}
      */
-    _onClick(e) {
+    _onClick() {
         const { afterClick } = this.props;
 
         this._handleClick();
-        afterClick && afterClick(e);
-
-        // blur after click to release focus from button to allow PTT.
-        e?.currentTarget?.blur && e.currentTarget.blur();
+        afterClick && afterClick();
     }
 
     /**
@@ -278,6 +275,7 @@ export default class AbstractButton<P: Props, S: *> extends Component<P, S> {
             disabled: this._isDisabled(),
             elementAfter: this._getElementAfter(),
             icon: this._getIcon(),
+            iconImage: this._getIconImage(),
             label: this._getLabel(),
             styles: this._getStyles(),
             toggled: this._isToggled(),

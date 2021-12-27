@@ -29,7 +29,7 @@ type Props = {
 /**
  * Creates a ReactElement responsible for drawing audio levels.
  *
- * @augments {Component}
+ * @extends {Component}
  */
 class AudioLevelIndicator extends Component<Props> {
     /**
@@ -39,11 +39,8 @@ class AudioLevelIndicator extends Component<Props> {
      * @returns {ReactElement}
      */
     render() {
-        const { audioLevel: passedAudioLevel } = this.props;
-
         // First make sure we are sensitive enough.
-        const audioLevel = typeof passedAudioLevel === 'number' && !isNaN(passedAudioLevel)
-            ? Math.min(passedAudioLevel * 1.2, 1) : 0;
+        const audioLevel = Math.min(this.props.audioLevel * 1.2, 1);
 
         // Let's now stretch the audio level over the number of dots we have.
         const stretchedAudioLevel = AUDIO_LEVEL_DOTS * audioLevel;

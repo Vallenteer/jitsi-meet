@@ -1,11 +1,14 @@
 // @flow
 
+import { MEDIA_TYPE, VIDEO_TYPE } from '../base/media';
 import { getLocalParticipant } from '../base/participants';
 import { StateListenerRegistry } from '../base/redux';
+import { getTrackByMediaTypeAndParticipant } from '../base/tracks';
 import { appendSuffix } from '../display-name';
 import { shouldDisplayTileView } from '../video-layout';
 
 declare var APP: Object;
+declare var interfaceConfig: Object;
 
 /**
  * StateListenerRegistry provides a reliable way of detecting changes to
@@ -21,7 +24,6 @@ StateListenerRegistry.register(
     /* selector */ state => state['features/base/settings'].displayName,
     /* listener */ (displayName, store) => {
         const localParticipant = getLocalParticipant(store.getState());
-        const { defaultLocalDisplayName } = store.getState()['features/base/config'];
 
         // Initial setting of the display name occurs happens on app
         // initialization, before the local participant is ready. The initial
@@ -33,8 +35,7 @@ StateListenerRegistry.register(
                 displayName,
                 formattedDisplayName: appendSuffix(
                     displayName,
-                    defaultLocalDisplayName
-                )
+                    interfaceConfig.DEFAULT_LOCAL_DISPLAY_NAME)
             });
         }
     });
@@ -44,7 +45,12 @@ StateListenerRegistry.register(
  */
 StateListenerRegistry.register(
     /* selector */ state => state['features/large-video'].participantId,
-    /* listener */ participantId => {
-        APP.API.notifyOnStageParticipantChanged(participantId);
+    /* listener */ (participantId, store) => {
+        const videoTrack = getTrackByMediaTypeAndParticipant(
+            store.getState()['features/base/tracks'], MEDIA_TYPE.VIDEO, participantId);
+
+        if (videoTrack && videoTrack.videoType === VIDEO_TYPE.CAMERA) {
+            APP.API.notifyOnStageParticipantChanged(participantId);
+        }
     }
 );

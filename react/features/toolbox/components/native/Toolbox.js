@@ -1,24 +1,21 @@
 // @flow
 
-import React from 'react';
-import { SafeAreaView, View } from 'react-native';
+import React, { PureComponent } from 'react';
+import { View } from 'react-native';
 
 import { ColorSchemeRegistry } from '../../../base/color-scheme';
+import { getFeatureFlag, TOOLBAR_BUTTONS } from '../../../base/flags';
+import { Container } from '../../../base/react';
 import { connect } from '../../../base/redux';
 import { StyleType } from '../../../base/styles';
 import { ChatButton } from '../../../chat';
-import { ParticipantsPaneButton } from '../../../participants-pane/components/native';
-import { ReactionsMenuButton } from '../../../reactions/components';
-import { isReactionsEnabled } from '../../../reactions/functions.any';
-import { TileViewButton } from '../../../video-layout';
-import { isToolboxVisible, getMovableButtons } from '../../functions.native';
+import { isToolboxVisible } from '../../functions';
 import AudioMuteButton from '../AudioMuteButton';
 import HangupButton from '../HangupButton';
 import VideoMuteButton from '../VideoMuteButton';
 
 import OverflowMenuButton from './OverflowMenuButton';
 import RaiseHandButton from './RaiseHandButton';
-import ToggleCameraButton from './ToggleCameraButton';
 import styles from './styles';
 
 /**
@@ -37,83 +34,146 @@ type Props = {
     _visible: boolean,
 
     /**
-     * The width of the screen.
+     * The redux {@code dispatch} function.
      */
-    _width: number,
+    dispatch: Function,
 
-    /**
-     * Whether or not the reactions feature is enabled.
-     */
-    _reactionsEnabled: boolean
+    toolbarButtons: string
 };
 
 /**
- * Implements the conference Toolbox on React Native.
- *
- * @param {Object} props - The props of the component.
- * @returns {React$Element}.
+ * Implements the conference toolbox on React Native.
  */
-function Toolbox(props: Props) {
-    if (!props._visible) {
-        return null;
+class Toolbox extends PureComponent<Props> {
+    /**
+     * Implements React's {@link Component#render()}.
+     *
+     * @inheritdoc
+     * @returns {ReactElement}
+     */
+    render() {
+        return (
+            <Container
+                style = { styles.toolbox }
+                visible = { this.props._visible }>
+                { this._renderToolbar() }
+            </Container>
+        );
     }
 
-    const { _styles, _width, _reactionsEnabled } = props;
-    const { buttonStylesBorderless, hangupButtonStyles, toggledButtonStyles } = _styles;
-    const additionalButtons = getMovableButtons(_width);
-    const backgroundToggledStyle = {
-        ...toggledButtonStyles,
-        style: [
-            toggledButtonStyles.style,
-            _styles.backgroundToggle
-        ]
-    };
+    /**
+     * Constructs the toggled style of the chat button. This cannot be done by
+     * simple style inheritance due to the size calculation done in this
+     * component.
+     *
+     * @param {Object} baseStyle - The base style that was originally
+     * calculated.
+     * @returns {Object | Array}
+     */
+    _getChatButtonToggledStyle(baseStyle) {
+        const { _styles } = this.props;
 
-    return (
-        <View
-            pointerEvents = 'box-none'
-            style = { styles.toolboxContainer }>
-            <SafeAreaView
+        if (Array.isArray(baseStyle.style)) {
+            return {
+                ...baseStyle,
+                style: [
+                    ...baseStyle.style,
+                    _styles.chatButtonOverride.toggled
+                ]
+            };
+        }
+
+        return {
+            ...baseStyle,
+            style: [
+                baseStyle.style,
+                _styles.chatButtonOverride.toggled
+            ]
+        };
+    }
+
+    /**
+     * Renders the toolbar. In order to avoid a weird visual effect in which the
+     * toolbar is (visually) rendered and then visibly changes its size, it is
+     * rendered only after we've figured out the width available to the toolbar.
+     *
+     * @returns {React$Node}
+     */
+    _renderToolbar() {
+        const { _styles } = this.props;
+        const { buttonStyles, buttonStylesBorderless, hangupButtonStyles, toggledButtonStyles } = _styles;
+
+        const hasChat = this.props.toolbarButtons.indexOf('chat') >= 0;
+        const hasRaiseHand = this.props.toolbarButtons.indexOf('raisehand') >= 0;
+        const hasSettings = this.props.toolbarButtons.indexOf('settings') >= 0;
+        const hasHangup = this.props.toolbarButtons.indexOf('hangup') >= 0;
+        const hasCam = this.props.toolbarButtons.indexOf('camera') >= 0;
+        const hasMic = this.props.toolbarButtons.indexOf('microphone') >= 0;
+
+
+        if (!(hasChat || hasRaiseHand || hasSettings || hasHangup || hasCam || hasMic)) {
+            return (<></>)
+        }
+
+        return (
+            <View
                 accessibilityRole = 'toolbar'
                 pointerEvents = 'box-none'
-                style = { styles.toolbox }>
-                <AudioMuteButton
-                    styles = { buttonStylesBorderless }
-                    toggledStyles = { toggledButtonStyles } />
-                <VideoMuteButton
-                    styles = { buttonStylesBorderless }
-                    toggledStyles = { toggledButtonStyles } />
-                {
-                    additionalButtons.has('chat')
-                      && <ChatButton
-                          styles = { buttonStylesBorderless }
-                          toggledStyles = { backgroundToggledStyle } />
-                }
+                style = { styles.toolbar }>
 
-                { additionalButtons.has('raisehand') && (_reactionsEnabled
-                    ? <ReactionsMenuButton
-                        styles = { buttonStylesBorderless }
-                        toggledStyles = { backgroundToggledStyle } />
-                    : <RaiseHandButton
-                        styles = { buttonStylesBorderless }
-                        toggledStyles = { backgroundToggledStyle } />)}
-                {additionalButtons.has('tileview') && <TileViewButton styles = { buttonStylesBorderless } />}
-                {additionalButtons.has('participantspane')
-                && <ParticipantsPaneButton
-                    styles = { buttonStylesBorderless } />
-                }
-                {additionalButtons.has('togglecamera')
-                      && <ToggleCameraButton
-                          styles = { buttonStylesBorderless }
-                          toggledStyles = { backgroundToggledStyle } />}
-                <OverflowMenuButton
-                    styles = { buttonStylesBorderless }
+                { hasMic && (<AudioMuteButton
+                    label = 'Audio'
+                    showLabel = {true}
+                    labelPlacement = 'bottom'
+
+                    styles = { buttonStyles }
                     toggledStyles = { toggledButtonStyles } />
-                <HangupButton
+                )}
+
+                { hasCam && (<VideoMuteButton
+                    label = 'Video'
+                    showLabel = {true}
+                    labelPlacement = 'bottom'
+
+                    styles = { buttonStyles }
+                    toggledStyles = { toggledButtonStyles } />
+                )}
+
+                { hasChat && (<ChatButton
+                    label = 'Chat'
+                    showLabel = {true}
+                    labelPlacement = 'bottom'
+                    styles = { buttonStyles }
+                    toggledStyles = { this._getChatButtonToggledStyle(toggledButtonStyles) } />
+                )}
+
+                { hasRaiseHand && (<RaiseHandButton
+                    label = 'Raise Hand'
+                    showLabel = {true}
+                    labelPlacement = 'bottom'
+                    styles = { buttonStyles }
+                    toggledStyles = { toggledButtonStyles } />
+                )}
+
+                { hasSettings && (<OverflowMenuButton
+                    label = 'Settings'
+                    showLabel = {true}
+                    labelPlacement = 'bottom'
+
+                    styles = { buttonStyles }
+                    toggledStyles = { toggledButtonStyles } />
+                )}
+
+                { hasHangup && (<HangupButton
+                    label = 'Settings'
+                    showLabel = {true}
+                    labelPlacement = 'bottom'
+
                     styles = { hangupButtonStyles } />
-            </SafeAreaView>
-        </View>
-    );
+                )}
+            </View>
+        );
+    }
 }
 
 /**
@@ -129,8 +189,9 @@ function _mapStateToProps(state: Object): Object {
     return {
         _styles: ColorSchemeRegistry.get(state, 'Toolbox'),
         _visible: isToolboxVisible(state),
-        _width: state['features/base/responsive-ui'].clientWidth,
-        _reactionsEnabled: isReactionsEnabled(state)
+        toolbarButtons: getFeatureFlag(state, TOOLBAR_BUTTONS,
+            '')
+
     };
 }
 

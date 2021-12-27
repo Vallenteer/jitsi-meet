@@ -1,33 +1,35 @@
 import { ColorSchemeRegistry, schemeColor } from '../../../base/color-scheme';
-import { BoxModel, fixAndroidViewClipping } from '../../../base/styles';
-import BaseTheme from '../../../base/ui/components/BaseTheme.native';
+import { BoxModel, ColorPalette, fixAndroidViewClipping } from '../../../base/styles';
+import { FILMSTRIP_SIZE } from '../../../filmstrip';
 
-export const INSECURE_ROOM_NAME_LABEL_COLOR = BaseTheme.palette.actionDanger;
+export const NAVBAR_GRADIENT_COLORS = [ '#000000FF', '#00000000' ];
+export const INSECURE_ROOM_NAME_LABEL_COLOR = ColorPalette.warning;
 
-const NAVBAR_BUTTON_SIZE = 24;
-
-
-/**
- * The styles of the safe area view that contains the navigation bar.
- */
-const navBarSafeView = {
-    left: 0,
-    position: 'absolute',
-    right: 0,
-    top: 0
-};
+// From brand guideline
+const BOTTOM_GRADIENT_HEIGHT = 290;
+const DEFAULT_GRADIENT_SIZE = 140;
 
 /**
  * The styles of the feature conference.
  */
 export default {
 
+    bottomGradient: {
+        bottom: 0,
+        flexDirection: 'column',
+        justifyContent: 'flex-end',
+        minHeight: DEFAULT_GRADIENT_SIZE,
+        left: 0,
+        position: 'absolute',
+        right: 0
+    },
+
     /**
-     * {@code Conference} Style.
+     * {@code Conference} style.
      */
     conference: fixAndroidViewClipping({
         alignSelf: 'stretch',
-        backgroundColor: BaseTheme.palette.uiBackground,
+        backgroundColor: ColorPalette.appBackground,
         flex: 1
     }),
 
@@ -35,14 +37,20 @@ export default {
         margin: 10
     },
 
-    headerNavigationIcon: {
-        marginLeft: 12
+    gradient: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        flex: 1
     },
 
-    headerNavigationButton: {
-        height: BaseTheme.spacing[6],
-        marginTop: BaseTheme.spacing[3],
-        width: BaseTheme.spacing[6]
+    gradientStretchBottom: {
+        height: BOTTOM_GRADIENT_HEIGHT
+    },
+
+    gradientStretchTop: {
+        height: DEFAULT_GRADIENT_SIZE
     },
 
     /**
@@ -50,35 +58,30 @@ export default {
      */
     indicatorContainer: {
         flex: 1,
-        flexDirection: 'row'
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        margin: BoxModel.margin
     },
 
-    inviteButtonContainer: {
-        borderRadius: 3,
-        height: BaseTheme.spacing[7],
+    /**
+     * Indicator container for wide aspect ratio.
+     */
+    indicatorContainerWide: {
+        marginRight: FILMSTRIP_SIZE + BoxModel.margin
+    },
+
+    labelWrapper: {
+        flexDirection: 'column',
         position: 'absolute',
-        marginTop: BaseTheme.spacing[1],
-        marginRight: BaseTheme.spacing[1],
-        top: 0,
         right: 0,
-        zIndex: 1,
-        width: BaseTheme.spacing[7]
-    },
-
-    inviteButton: {
-        iconStyle: {
-            color: BaseTheme.palette.icon01,
-            padding: 12,
-            fontSize: NAVBAR_BUTTON_SIZE
-        },
-        underlayColor: BaseTheme.spacing.underlay01
+        top: 0
     },
 
     lonelyButton: {
         alignItems: 'center',
         borderRadius: 24,
         flexDirection: 'row',
-        height: BaseTheme.spacing[6],
+        height: 48,
         justifyContent: 'space-around',
         paddingHorizontal: 12
     },
@@ -97,79 +100,58 @@ export default {
         paddingVertical: 12
     },
 
-    pipButtonContainer: {
-        borderRadius: 3,
-        height: BaseTheme.spacing[7],
-        position: 'absolute',
-        marginTop: BaseTheme.spacing[1],
-        marginLeft: BaseTheme.spacing[1],
-        top: 0,
-        left: 0,
-        zIndex: 1,
-        width: BaseTheme.spacing[7]
-    },
-
-    pipButton: {
+    navBarButton: {
         iconStyle: {
-            color: BaseTheme.palette.icon01,
-            padding: 12,
-            fontSize: NAVBAR_BUTTON_SIZE
+            color: ColorPalette.white,
+            fontSize: 24
         },
-        underlayColor: BaseTheme.spacing.underlay01
+
+        underlayColor: 'transparent'
     },
 
-    navBarSafeViewColor: {
-        ...navBarSafeView,
-        backgroundColor: BaseTheme.palette.uiBackground
+    navBarContainer: {
+        flexDirection: 'column',
+        left: 0,
+        position: 'absolute',
+        right: 0,
+        top: 0
     },
 
-    navBarSafeViewTransparent: {
-        ...navBarSafeView
+    navBarSafeView: {
+        left: 0,
+        position: 'absolute',
+        right: 0,
+        top: 0
     },
 
     navBarWrapper: {
         alignItems: 'center',
         flex: 1,
         flexDirection: 'row',
-        height: BaseTheme.spacing[8],
-        justifyContent: 'center'
+        height: 44,
+        justifyContent: 'space-between',
+        paddingHorizontal: 14
     },
 
     roomTimer: {
-        color: BaseTheme.palette.text01,
-        fontSize: 12,
-        fontWeight: '400',
-        paddingHorizontal: 8
-    },
-
-    roomTimerView: {
-        backgroundColor: BaseTheme.palette.action02,
-        borderRadius: 3,
-        height: 28,
-        justifyContent: 'center',
-        minWidth: 50
+        color: ColorPalette.white,
+        fontSize: 15,
+        opacity: 0.6
     },
 
     roomName: {
-        color: BaseTheme.palette.text01,
-        fontSize: 14,
+        color: ColorPalette.white,
+        fontSize: 17,
         fontWeight: '400'
     },
 
-    roomNameView: {
-        backgroundColor: 'rgba(0,0,0,0.6)',
-        borderBottomLeftRadius: 3,
-        borderTopLeftRadius: 3,
-        flexShrink: 1,
-        height: 28,
-        justifyContent: 'center',
-        paddingHorizontal: 10,
-        maxWidth: 168
-    },
-
     roomNameWrapper: {
-        flexDirection: 'row',
-        marginHorizontal: 35
+        flexDirection: 'column',
+        alignItems: 'center',
+        left: 0,
+        paddingHorizontal: 48,
+        position: 'absolute',
+        right: 0
     },
 
     /**
@@ -182,9 +164,14 @@ export default {
         flexDirection: 'column',
         justifyContent: 'flex-end',
         left: 0,
+        paddingBottom: BoxModel.padding,
         position: 'absolute',
         right: 0,
-        top: 0
+
+        // Both on Android and iOS there is the status bar which may be visible.
+        // On iPhone X there is the notch. In the two cases BoxModel.margin is
+        // not enough.
+        top: BoxModel.margin * 3
     },
 
     insecureRoomNameLabel: {

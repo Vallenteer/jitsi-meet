@@ -1,1 +1,2 @@
-export { default as UnsupportedDesktopBrowser } from './PageSelector';
+export { default as UnsupportedDesktopBrowser }
+    from './UnsupportedDesktopBrowser';

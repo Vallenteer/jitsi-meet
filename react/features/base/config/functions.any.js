@@ -1,13 +1,12 @@
 // @flow
 
-import Bourne from '@hapi/bourne';
 import { jitsiLocalStorage } from '@jitsi/js-utils';
 import _ from 'lodash';
 
 import { parseURLParams } from '../util';
 
 import CONFIG_WHITELIST from './configWhitelist';
-import { _CONFIG_STORE_PREFIX, FEATURE_FLAGS } from './constants';
+import { _CONFIG_STORE_PREFIX } from './constants';
 import INTERFACE_CONFIG_WHITELIST from './interfaceConfigWhitelist';
 import logger from './logger';
 
@@ -33,64 +32,14 @@ export function createFakeConfig(baseURL: string) {
             muc: `conference.${url.hostname}`
         },
         bosh: `${baseURL}http-bind`,
+        clientNode: 'https://jitsi.org/jitsi-meet',
         p2p: {
             enabled: true
         }
     };
 }
 
-/**
- * Selector used to get the meeting region.
- *
- * @param {Object} state - The global state.
- * @returns {string}
- */
-export function getMeetingRegion(state: Object) {
-    return state['features/base/config']?.deploymentInfo?.region || '';
-}
-
-/**
- * Selector used to get the sourceNameSignaling feature flag.
- *
- * @param {Object} state - The global state.
- * @returns {boolean}
- */
-export function getSourceNameSignalingFeatureFlag(state: Object) {
-    return getFeatureFlag(state, FEATURE_FLAGS.SOURCE_NAME_SIGNALING);
-}
-
-/**
- * Selector used to get a feature flag.
- *
- * @param {Object} state - The global state.
- * @param {string} featureFlag - The name of the feature flag.
- * @returns {boolean}
- */
-export function getFeatureFlag(state: Object, featureFlag: string) {
-    const featureFlags = state['features/base/config']?.flags || {};
-
-    return Boolean(featureFlags[featureFlag]);
-}
-
-/**
- * Selector used to get the disableRemoveRaisedHandOnFocus.
- *
- * @param {Object} state - The global state.
- * @returns {boolean}
- */
-export function getDisableRemoveRaisedHandOnFocus(state: Object) {
-    return state['features/base/config']?.disableRemoveRaisedHandOnFocus || false;
-}
-
-/**
- * Selector used to get the endpoint used for fetching the recording.
- *
- * @param {Object} state - The global state.
- * @returns {string}
- */
-export function getRecordingSharingUrl(state: Object) {
-    return state['features/base/config'].recordingSharingUrl;
-}
+/* eslint-disable max-params, no-shadow */
 
 /**
  * Overrides JSON properties in {@code config} and
@@ -133,7 +82,7 @@ export function overrideConfigJSON(
         }
         if (configObj) {
             const configJSON
-                = getWhitelistedJSON(configName, json[configName]);
+                = _getWhitelistedJSON(configName, json[configName]);
 
             if (!_.isEmpty(configJSON)) {
                 logger.info(
@@ -162,10 +111,11 @@ export function overrideConfigJSON(
  * @param {string} configName - The config name, one of config,
  * interfaceConfig, loggingConfig.
  * @param {Object} configJSON - The object with keys and values to override.
+ * @private
  * @returns {Object} - The result object only with the keys
  * that are whitelisted.
  */
-export function getWhitelistedJSON(configName: string, configJSON: Object): Object {
+function _getWhitelistedJSON(configName, configJSON) {
     if (configName === 'interfaceConfig') {
         return _.pick(configJSON, INTERFACE_CONFIG_WHITELIST);
     } else if (configName === 'config') {
@@ -174,18 +124,6 @@ export function getWhitelistedJSON(configName: string, configJSON: Object): Obje
 
     return configJSON;
 }
-
-/**
- * Selector for determining if the display name is read only.
- *
- * @param {Object} state - The state of the app.
- * @returns {boolean}
- */
-export function isNameReadOnly(state: Object): boolean {
-    return state['features/base/config'].disableProfile
-        || state['features/base/config'].readOnlyName;
-}
-
 
 /**
  * Restores a Jitsi Meet config.js from {@code localStorage} if it was
@@ -204,7 +142,7 @@ export function restoreConfig(baseURL: string): ?Object {
 
     if (config) {
         try {
-            return Bourne.parse(config) || undefined;
+            return JSON.parse(config) || undefined;
         } catch (e) {
             // Somehow incorrect data ended up in the storage. Clean it up.
             jitsiLocalStorage.removeItem(key);

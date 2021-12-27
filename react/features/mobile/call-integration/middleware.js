@@ -1,7 +1,7 @@
 // @flow
 
 import { Alert, NativeModules, Platform } from 'react-native';
-import { v4 as uuidv4 } from 'uuid';
+import uuid from 'uuid';
 
 import { createTrackMutedEvent, sendAnalytics } from '../../analytics';
 import { appNavigate } from '../../app/actions';
@@ -116,14 +116,13 @@ function _appWillMount({ dispatch, getState }, next, action) {
         _onPerformEndCallAction
     };
 
-    if (isCallIntegrationEnabled(getState)) {
-        const subscriptions = CallIntegration.registerSubscriptions(context, delegate);
+    const subscriptions
+        = CallIntegration.registerSubscriptions(context, delegate);
 
-        subscriptions && dispatch({
-            type: _SET_CALL_INTEGRATION_SUBSCRIPTIONS,
-            subscriptions
-        });
-    }
+    subscriptions && dispatch({
+        type: _SET_CALL_INTEGRATION_SUBSCRIPTIONS,
+        subscriptions
+    });
 
     return result;
 }
@@ -272,7 +271,7 @@ function _conferenceWillJoin({ dispatch, getState }, next, action) {
 
     // When assigning the call UUID, do so in upper case, since iOS will return
     // it upper cased.
-    conference.callUUID = (callUUID || uuidv4()).toUpperCase();
+    conference.callUUID = (callUUID || uuid.v4()).toUpperCase();
 
     CallIntegration.startCall(conference.callUUID, handle, hasVideo)
         .then(() => {

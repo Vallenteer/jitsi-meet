@@ -12,7 +12,7 @@ import styles from './styles';
 type Props = {
 
     /**
-     * Item containing data to be rendered.
+     * item containing data to be rendered
      */
     item: Item,
 
@@ -34,9 +34,9 @@ type Props = {
 
 /**
  * Implements a React/Native {@link Component} that renders the Navigate Section
- * List Item.
+ * List Item
  *
- * @augments Component
+ * @extends Component
  */
 export default class NavigateSectionListItem extends Component<Props> {
     /**

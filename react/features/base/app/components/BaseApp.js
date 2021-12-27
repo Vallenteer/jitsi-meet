@@ -101,18 +101,6 @@ export default class BaseApp extends Component<*, State> {
     }
 
     /**
-     * Logs for errors that were not caught.
-     *
-     * @param {Error} error - The error that was thrown.
-     * @param {Object} info - Info about the error(stack trace);.
-     *
-     * @returns {void}
-     */
-    componentDidCatch(error: Error, info: Object) {
-        logger.error(error, info);
-    }
-
-    /**
      * Delays this {@code BaseApp}'s startup until the {@code Storage}
      * implementation of {@code localStorage} initializes. While the
      * initialization is instantaneous on Web (with Web Storage API), it is
@@ -155,7 +143,7 @@ export default class BaseApp extends Component<*, State> {
     }
 
     /**
-     * Creates an extra {@link ReactElement}s to be added (unconditionally)
+     * Creates an extra {@link ReactElement}s to be added (unconditionaly)
      * alongside the main element.
      *
      * @returns {ReactElement}
@@ -259,5 +247,5 @@ export default class BaseApp extends Component<*, State> {
      *
      * @returns {React$Element}
      */
-    _renderDialogContainer: () => React$Element<*>;
+    _renderDialogContainer: () => React$Element<*>
 }

@@ -37,21 +37,14 @@ type Props = {
     placeHolder: string,
 
     /**
-     * Whether the input is read only or not.
-     */
-    readOnly?: boolean,
-
-    /**
-     * The field type (e.g. Text, password...etc).
+     * The field type (e.g. text, password...etc).
      */
     type: string,
 
     /**
      * Externally provided value.
      */
-    value?: string,
-    id?: string,
-    autoComplete?: string
+    value?: string
 };
 
 type State = {
@@ -121,17 +114,14 @@ export default class InputField extends PureComponent<Props, State> {
     render() {
         return (
             <input
-                autoComplete = { this.props.autoComplete }
                 autoFocus = { this.props.autoFocus }
                 className = { `field ${this.state.focused ? 'focused' : ''} ${this.props.className || ''}` }
                 data-testid = { this.props.testId ? this.props.testId : undefined }
-                id = { this.props.id }
                 onBlur = { this._onBlur }
                 onChange = { this._onChange }
                 onFocus = { this._onFocus }
                 onKeyDown = { this._onKeyDown }
                 placeholder = { this.props.placeHolder }
-                readOnly = { this.props.readOnly }
                 type = { this.props.type }
                 value = { this.state.value } />
         );

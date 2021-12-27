@@ -13,7 +13,7 @@ import AbstractStopLiveStreamDialog, {
  * A React Component for confirming the participant wishes to stop the currently
  * active live stream of the conference.
  *
- * @augments Component
+ * @extends Component
  */
 class StopLiveStreamDialog extends AbstractStopLiveStreamDialog {
 

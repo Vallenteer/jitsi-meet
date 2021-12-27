@@ -23,7 +23,8 @@ class ColorSchemeRegistry {
     _styleTemplates = new Map();
 
     /**
-     * Clears the already scheme-ified style definitions.
+     * Clears the already scheme-ified style definitions. This is useful when
+     * the {@code SET_COLOR_SCHEME} action is dispatched (again).
      *
      * @returns {void}
      */
@@ -32,12 +33,12 @@ class ColorSchemeRegistry {
     }
 
     /**
-     * Retrieves the color-scheme applied style definition of a component.
+     * Retreives the color-scheme applied style definition of a component.
      *
      * @param {Object | Function} stateful - An object or function that can be
      * resolved to Redux state using the {@code toState} function.
      * @param {string} componentName - The name of the component whose style we
-     * want to retrieve.
+     * want to retreive.
      * @returns {StyleType}
      */
     get(stateful: Object | Function, componentName: string): StyleType {
@@ -114,7 +115,7 @@ class ColorSchemeRegistry {
             ] of Object.entries(schemedStyle)) {
                 if (typeof styleValue === 'object') {
                     // The value is another style object, we apply the same
-                    // transformation recursively.
+                    // transformation recusively.
                     schemedStyle[styleName]
                         = this._applyColorScheme(
                             stateful, componentName, styleValue);
@@ -149,7 +150,7 @@ class ColorSchemeRegistry {
             stateful: Object | Function,
             componentName: string,
             colorDefinition: string): string {
-        const colorScheme = toState(stateful)['features/base/color-scheme'] || {};
+        const colorScheme = toState(stateful)['features/base/color-scheme'];
 
         return {
             ...defaultScheme._defaultTheme,

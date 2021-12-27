@@ -1,6 +1,6 @@
 // @flow
 
-import Logger from '@jitsi/logger';
+import Logger from 'jitsi-meet-logger';
 
 const logger = Logger.getLogger(__filename);
 

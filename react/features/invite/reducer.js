@@ -60,7 +60,6 @@ ReducerRegistry.register('features/invite', (state = DEFAULT_STATE, action) => {
                 ...state,
                 conferenceID: action.conferenceID,
                 numbers: action.dialInNumbers,
-                sipUri: action.sipUri,
                 numbersEnabled: true,
                 numbersFetched: true
             };

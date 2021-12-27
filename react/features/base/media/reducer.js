@@ -7,11 +7,9 @@ import { TRACK_REMOVED } from '../tracks/actionTypes';
 import {
     SET_AUDIO_AVAILABLE,
     SET_AUDIO_MUTED,
-    SET_AUDIO_UNMUTE_PERMISSIONS,
     SET_CAMERA_FACING_MODE,
     SET_VIDEO_AVAILABLE,
     SET_VIDEO_MUTED,
-    SET_VIDEO_UNMUTE_PERMISSIONS,
     STORE_VIDEO_TRANSFORM,
     TOGGLE_CAMERA_FACING_MODE
 } from './actionTypes';
@@ -35,7 +33,6 @@ import { CAMERA_FACING_MODE } from './constants';
  */
 export const _AUDIO_INITIAL_MEDIA_STATE = {
     available: true,
-    unmuteBlocked: false,
     muted: false
 };
 
@@ -62,12 +59,6 @@ function _audio(state = _AUDIO_INITIAL_MEDIA_STATE, action) {
             muted: action.muted
         };
 
-    case SET_AUDIO_UNMUTE_PERMISSIONS:
-        return {
-            ...state,
-            unmuteBlocked: action.blocked
-        };
-
     default:
         return state;
     }
@@ -92,7 +83,6 @@ function _audio(state = _AUDIO_INITIAL_MEDIA_STATE, action) {
  */
 export const _VIDEO_INITIAL_MEDIA_STATE = {
     available: true,
-    unmuteBlocked: false,
     facingMode: CAMERA_FACING_MODE.USER,
     muted: 0,
 
@@ -134,12 +124,6 @@ function _video(state = _VIDEO_INITIAL_MEDIA_STATE, action) {
         return {
             ...state,
             muted: action.muted
-        };
-
-    case SET_VIDEO_UNMUTE_PERMISSIONS:
-        return {
-            ...state,
-            unmuteBlocked: action.blocked
         };
 
     case STORE_VIDEO_TRANSFORM:
