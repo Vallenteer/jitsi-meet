@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">VideoAPI SDK test</string>
+    <string name="btn_mic">Mic</string>
+    <string name="btn_cam">Cam</string>
+    <string name="btn_raise_hand">Raise</string>
+    <string name="btn_hangup">Hangup</string>
+</resources>
